@@ -1,0 +1,122 @@
+# qwen3ttsfaster 配置文件
+# qwen3asr阻塞式
+# 仅按钮打断对话2 ,前端界面自启
+# cd /opt/jyd01/liushiguo/OpenAvatarChat_test
+# CUDA_VISIBLE_DEVICES=2 uv run src/demo.py --config config/xiaoyu_chat_with_qen3asr_qwen3_tts_xingkong3_musetalk_button2_jyd_auto2_kid.yaml
+# CUDA_VISIBLE_DEVICES=2 nohup uv run src/demo.py --config config/xiaoyu_chat_with_qen3asr_qwen3_tts_xingkong3_musetalk_button2_jyd_auto2_kid.yaml > ./logs/8028.log 2>&1 &
+
+default:
+  logger:
+    log_level: "INFO"
+  service:
+    host: "0.0.0.0"
+    port: 8026
+    cert_file: "ssl_certs/localhost.crt"
+    cert_key: "ssl_certs/localhost.key"
+  chat_engine:
+    model_root: "models"
+    concurrent_limit: 5
+    handler_search_path:
+      - "src/handlers"
+    handler_configs:
+      RtcClient:
+        module: client/rtc_client/client_handler_rtc51_newfront3_auto_xiaoyu
+        # max time a session will last for
+        connection_ttl: 3600
+      SileroVad:
+        module: vad/silerovad/vad_handler_silero_button
+        speaking_threshold: 0.4    # 降低阈值提升灵敏度
+        start_delay: 1024          # 减小起始延迟，更快识别语音开头
+        end_delay: 10000            # 适度减小结束延迟，减少无语音误判
+        buffer_look_back: 5000     # 合理回溯，兼顾内存和灵敏度
+        speech_padding: 1024       # 增加填充，保留更多语音边缘内容
+      # SenseVoice:
+      #   enabled: True
+      #   module: asr/sensevoice/asr_handler_sensevoice_button
+      #   model_name: "iic/SenseVoiceSmall"
+      # SenseVoice:
+      #   enabled: True
+      #   module: asr/sensevoice/asr_handler_sensevoice51
+      #   model_name: "iic/SenseVoiceSmall"
+      Qwen3ASRBlocking:
+        enabled: True
+        module: asr/qwen3asr/qwen3_asr_handler_blocking
+        server_url: "http://localhost:9009"
+        wakeup_words_pattern: "^((你)?好\\s*[，,]?\\s*(小达|小的|小德|小岛|小当|小唐|小打)|(等一下|停一下|暂停|别说了|打住|一下|等一下|停一下|闭嘴|stop|shut up))"
+
+
+      # Edge_TTS:
+      #   enabled: True
+      #   module: tts/edgetts/tts_handler_edgetts4_button3
+      #   voice: "zh-CN-XiaoxiaoNeural"
+
+      # CosyVoice:
+      #   enabled: True
+      #   module: tts/bailian_tts/tts_handler_cosyvoice_bailian
+      #   # voice: "longyingxiao_v3"  年轻小女生
+      #   voice: "longyingling_v3"  # 优雅知性女
+      #   # voice: "longanzhi_v3"  # 成熟稳重男
+      #   # voice: "longanyang"
+      #   # model_name: "cosyvoice-v1"
+      #   model_name: "cosyvoice-v3-flash"
+      #   # api_key: "sk-10405643d30443d8b641e0771ed56d2f" # default=os.getenv("DASHSCOPE_API_KEY")
+      #   # api_key: "sk-a588f70e9a614e4f87533ff792d2e358"
+      #   api_key: "sk-5f2d36a950e1406aa9a15b9bcb8b4616"
+
+
+      LLMWorkflowStreaming:
+        enabled: True
+        module: llm/xingkong3/llm_handler_zhongyi_streaming
+        api_url: "http://188.18.18.149:5001/v1/chat-messages"  # workflows
+        # api_url: "http://188.18.18.106:5001/v1/chat-messages"  # chat
+        api_key: "app-Ae9yzHN6RJ100e6ZEBbYe6Ez"  #app-BgSVnRI9NnpUpO5DJFTlx1P3 #chat   ；app-Mbzurid5vkLrmjKuo4rERLDO #Workflow
+        user_id: "abc-123"
+        timeout: 30
+
+      FasterQwen3TTS:
+        enabled: True
+        module: tts/faster-qwen3-tts/handler/faster_qwen3_tts_handler2_xiaoyu   #handler  没有分局逻辑，比较卡
+        server_url: "http://localhost:9006"
+        speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_中医问诊_孩子.pt"
+        # speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_中医问诊_女性.pt"
+        # speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_中医问诊_男性.pt"
+        timeout: 60
+
+
+      # GPT_SoVITS:
+      #   enabled: True
+      #   module: tts/gptsovits/gpt_sovits_handler3_wangxu
+      #   server_url: "http://localhost:9003" 
+      #   ref_audio_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/GPT-SoVITS/GPT_SoVITS/test/wangxu.wav"
+      #   ref_text: "希望我们都能像他一样，不行，他想了一下，我们不能对国王说，这是在撒谎。"
+      #   ref_language: "中文"
+      #   target_language: "中文"
+      #   sample_rate: 24000
+      #   timeout: 60
+
+      # MiniCPM-o:
+      #   enabled: True
+      #   module: llm/minicpm/llm_handler_minicpm
+      #   model_name: "MiniCPM-o-2_6"
+      #   # model_name: "MiniCPM-o-2_6-int4"
+      #   voice_prompt: "你不是通义千问，你不是阿里云，你是一名由竞业达开发的数字老师。用简短的两三句对话来回答用户的问题，并在对话内容中加入合适的标点符号，不需要讨论标点符号相关的内容。" #模仿输入音频中的声音特征。你不是通义千问，你不是阿里云，你是一名由竞业达开发的数字老师。用简短的两三句对话来回答用户的问题，并在对话内容中加入合适的标点符号，不需要讨论标点符号相关的内容。
+      #   assistant_prompt: ""
+      #   enable_video_input: True
+      #   skip_video_frame: 2
+
+      AvatarMusetalk:
+        module: avatar/musetalk/avatar_handler_musetalk42_xiaoyu
+        fps: 20 # Video frame rate (output_audio_sample_rate 24000;Video frame rate:15、16、20、24、25)
+        batch_size: 8 # Batch processing frame count, must be greater than 2
+        # avatar_video_path: "src/handlers/avatar/musetalk/MuseTalk/data/video/wmnoact_head_noact5.mp4"
+        avatar_video_path: "src/handlers/avatar/musetalk/MuseTalk/data/video/kid.mp4"
+
+
+        avatar_model_dir: "models/musetalk/avatar_model"  # Default avatar model directory
+        force_create_avatar: false  # Whether to force regenerate digital human data
+        debug: false  # Whether to enable debug mode
+        multi_thread_inference: true  # true: use 2 threads to inference (unet, vae), false: use single-thread to inference
+        debug_save_handler_audio: false  # Whether to save audio frames
+        # debug_replay_speech_id: "speech-d9o18xrugl6-1"  # Speech ID for replay
+
+        

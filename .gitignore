@@ -1,0 +1,41 @@
+# 忽略大目录
+models/
+build/
+resource/
+scripts/
+logs/
+tem_video/
+ssl_certs/
+
+# 忽略第三方嵌套仓库
+src/handlers/tts/CosyVoice3/
+src/handlers/tts/GPT-SoVITS/
+src/handlers/tts/Qwen3-TTS/
+src/handlers/tts/faster-qwen3-tts/
+src/handlers/tts/fish-speech/
+
+# 忽略所有权重
+*.pth
+*.bin
+*.ckpt
+*.safetensors
+*.pt
+*.h5
+*.onnx
+
+# 忽略音视频
+*.wav
+*.pcm
+*.mp3
+*.mp4
+*.zip
+*.tar.gz
+*.whl
+
+# 忽略环境
+.venv/
+__pycache__/
+*.pyc
+nohup.out
+uv.lock
+.DS_Store

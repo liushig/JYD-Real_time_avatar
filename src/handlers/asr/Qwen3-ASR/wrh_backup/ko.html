@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<title>JYD 实时识别</title>
+</head>
+
+<body>
+<h2>🎤 JYD 实时语音识别</h2>
+
+<label>服务器 IP：</label>
+<input id="serverIp" type="text" value="188.18.18.149" style="width:200px;">
+<button onclick="applyIP()">应用 IP</button>
+<br><br>
+
+<button id="startBtn">开始识别</button>
+<button id="stopBtn">停止识别</button>
+
+<div id="status" style="margin-top:10px;font-size:16px;font-weight:bold;"></div>
+<div id="result" style="margin-top:20px;font-size:20px;color:blue;white-space:pre-line;"></div>
+
+<script>
+let ws = null;
+let audioCtx = null;
+let processor = null;
+let stream = null;
+let serverWsUrl = "ws://188.18.18.149:7998"; // 默认值
+
+// ============== 动态应用新的 IP 地址 ==============
+function applyIP() {
+    const ip = document.getElementById("serverIp").value.trim();
+    serverWsUrl = `ws://${ip}:7998`;
+    document.getElementById("status").innerText = `🔧 已设置服务器地址：${serverWsUrl}`;
+}
+
+// ============== 页面加载申请麦克风权限 ==============
+window.onload = async () => {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        document.getElementById("status").innerText = "🎤 麦克风权限已授权";
+    } catch (err) {
+        document.getElementById("status").innerText = "❌ 无法获取麦克风权限：" + err;
+    }
+};
+
+// ============== 开始识别 ==============
+document.getElementById("startBtn").onclick = async () => {
+    if (!stream) {
+        document.getElementById("status").innerText = "❌ 未检测到麦克风，可能未授权";
+        return;
+    }
+
+    document.getElementById("status").innerText = "⏳ 正在连接服务器：" + serverWsUrl;
+
+    ws = new WebSocket(serverWsUrl);
+    ws.binaryType = "arraybuffer";
+
+    ws.onopen = async () => {
+        document.getElementById("status").innerText =
+            "✅ 连接成功，开始实时语音识别...";
+
+        audioCtx = new AudioContext({ sampleRate: 16000 });
+        const source = audioCtx.createMediaStreamSource(stream);
+
+        processor = audioCtx.createScriptProcessor(512, 1, 1);
+        processor.onaudioprocess = (event) => {
+            if (ws.readyState === WebSocket.OPEN) {
+                let pcm = event.inputBuffer.getChannelData(0);
+                ws.send(pcm.buffer);
+            }
+        };
+
+        source.connect(processor);
+        processor.connect(audioCtx.destination);
+    };
+
+    ws.onmessage = (msg) => {
+        const box = document.getElementById("result");
+        box.innerHTML += "📝 " + msg.data + "<br>";
+    };
+
+    ws.onerror = () => {
+        document.getElementById("status").innerText = "❌ WebSocket 连接错误";
+    };
+
+    ws.onclose = () => {
+        document.getElementById("status").innerText = "🔌 已断开连接";
+    };
+};
+
+// ============== 停止识别 ==============
+document.getElementById("stopBtn").onclick = () => {
+    if (ws) ws.close();
+    if (processor) processor.disconnect();
+    if (audioCtx) audioCtx.close();
+
+    document.getElementById("status").innerText = "🛑 已停止识别";
+};
+</script>
+
+</body>
+</html>

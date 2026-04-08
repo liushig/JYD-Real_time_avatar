@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数字人交互界面</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<!-- Permission Overlay -->
+<div id="permission-overlay">
+  <div class="perm-card">
+    <div class="perm-icon">🎤</div>
+    <div class="perm-title">授权访问设备</div>
+    <div class="perm-desc">数字人交互需要访问您的摄像头和麦克风。<br>请允许浏览器的权限请求。</div>
+    <button class="perm-btn" id="perm-grant-btn">允许访问</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<div id="app">
+
+  <!-- ===== 视频区域 ===== -->
+  <div id="left-panel">
+
+    <div id="topbar">
+      <div class="topbar-logo">
+        <div class="logo-dot"></div>
+        <span class="logo-text">Digital Human</span>
+      </div>
+      <div class="topbar-status">
+        <div class="status-indicator" id="status-dot"></div>
+        <span id="status-text">未连接</span>
+      </div>
+    </div>
+
+    <div id="remote-video-wrap">
+      <video id="remote-video" autoplay playsinline></video>
+      <div id="avatar-placeholder">
+        <div class="placeholder-rings">
+          <div class="ring ring-1"></div>
+          <div class="ring ring-2"></div>
+          <div class="ring ring-3"></div>
+          <div class="placeholder-core">🤖</div>
+        </div>
+        <div class="placeholder-label">Waiting for connection</div>
+      </div>
+    </div>
+
+    <div id="local-video-pip" class="hidden">
+      <video id="local-video" autoplay muted playsinline></video>
+    </div>
+
+    <div id="subtitle-bar">
+      <div class="subtitle-text" id="subtitle-text"></div>
+    </div>
+
+    <!-- 底部对话面板 -->
+    <div id="right-panel" class="">
+      <div id="panel-header">
+        <div class="panel-title">
+          <div class="panel-title-dot"></div>
+          对话记录
+        </div>
+        <button class="panel-clear-btn" id="clear-btn">清空</button>
+      </div>
+
+      <div id="chat-messages">
+        <div id="chat-empty">
+          <div class="empty-icon">💬</div>
+          <div class="empty-text">开始连接后，对话内容将展示在这里</div>
+        </div>
+      </div>
+
+      <div id="chat-input-area">
+        <div id="input-mode-hint">
+          <span class="hint-badge" id="hint-badge">离线</span>
+          <span id="hint-text">请先开始连接</span>
+        </div>
+        <div id="text-input-wrap">
+          <textarea id="text-input" rows="1" placeholder="输入消息，按 Enter 发送…" disabled></textarea>
+          <button id="send-btn" title="发送" disabled></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 控制栏 -->
+    <div id="controls-bar">
+      <button class="ctrl-btn" id="mic-btn" title="麦克风"></button>
+      <button class="ctrl-btn" id="vol-btn" title="音量"></button>
+      <button id="call-btn" title="开始连接"></button>
+      <button class="ctrl-btn" id="interrupt-btn" title="对话打断"></button>  <!-- title 改为“对话打断” -->
+      <button class="ctrl-btn" id="chat-panel-btn" title="对话记录"></button>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="./app.js"></script>
+</body>
+</html>

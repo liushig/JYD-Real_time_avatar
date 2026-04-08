@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>JYD 实时语音识别</title>
+
+<style>
+
+body{
+font-family: Arial;
+margin:30px;
+}
+
+#status{
+font-size:16px;
+font-weight:bold;
+margin-top:10px;
+}
+
+.status-ok{color:green;}
+.status-error{color:red;}
+
+#resultBox{position:relative;}
+
+#clearBtn{
+position:absolute;
+top:5px;
+right:10px;
+font-size:12px;
+cursor:pointer;
+color:#666;
+}
+
+#clearBtn:hover{color:red;}
+
+#result{
+margin-top:20px;
+font-size:20px;
+color:blue;
+white-space:pre-line;
+height:250px;
+overflow-y:auto;
+border:1px solid #ddd;
+padding:10px;
+border-radius:5px;
+}
+
+.flashRed{background-color:red;}
+
+.keyword{
+background-color:yellow;
+color:red;
+font-weight:bold;
+}
+
+#keywordList span{
+background:#eee;
+padding:6px 12px;
+margin:5px;
+border-radius:6px;
+display:inline-block;
+cursor:pointer;
+}
+
+#keywordList span:hover{background:#ffdddd;}
+
+button{
+padding:6px 14px;
+margin-right:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>🎤 JYD 实时语音识别</h2>
+
+<label>服务器 IP：</label>
+<input id="serverIp" value="188.18.53.101">
+
+<label>端口：</label>
+<input id="serverPort" value="7998" style="width:80px">
+
+<button onclick="applyServer()">应用</button>
+
+<br><br>
+
+<label>识别语言：</label>
+<select id="lang">
+<option value="Chinese" selected>中文</option>
+<option value="Korean">韩语</option>
+<option value="Japanese">日语</option>
+<option value="English">英语</option>
+</select>
+
+<br><br>
+
+<button id="startBtn">开始识别</button>
+<button id="stopBtn">停止识别</button>
+
+<div id="status" class="status-error">🔴 未连接</div>
+
+<hr>
+
+<h3>🚨 关键词管理（双击删除）</h3>
+
+<div id="keywordList"></div>
+
+<input id="keywordInput" placeholder="输入关键词">
+<button onclick="addKeyword()">添加</button>
+
+<hr>
+
+<div id="resultBox">
+<div id="clearBtn" onclick="clearSubtitle()">清空字幕</div>
+<div id="result"></div>
+</div>
+
+<script>
+
+let ws_asr=null
+let ws_keyword=null
+
+let audioCtx=null
+let processor=null
+let stream=null
+
+let alarmRunning=false
+let keywords=[]
+
+let serverIp="188.18.53.101"
+let serverPort="7998"
+
+let isRecording=false
+
+//////////////////////////////////////////////////////////
+
+function getLangName(){
+
+const lang=document.getElementById("lang").value
+
+const map={
+Chinese:"中文",
+Korean:"韩语",
+Japanese:"日语",
+English:"英语"
+}
+
+return map[lang]||lang
+
+}
+
+function setStatus(text,type){
+
+const box=document.getElementById("status")
+
+box.innerText=text
+box.className=type
+
+}
+
+//////////////////////////////////////////////////////////
+
+function clearSubtitle(){
+document.getElementById("result").innerHTML=""
+}
+
+//////////////////////////////////////////////////////////
+
+function renderKeywords(){
+
+const box=document.getElementById("keywordList")
+box.innerHTML=""
+
+keywords.forEach((k)=>{
+
+let span=document.createElement("span")
+span.innerText=k
+
+span.ondblclick=()=>{
+
+if(ws_keyword && ws_keyword.readyState===WebSocket.OPEN){
+
+ws_keyword.send(JSON.stringify({
+cmd:"delete_keyword",
+word:k
+}))
+
+}
+
+}
+
+box.appendChild(span)
+
+})
+
+}
+
+//////////////////////////////////////////////////////////
+
+function addKeyword(){
+
+let input=document.getElementById("keywordInput")
+let word=input.value.trim()
+
+if(!word) return
+
+if(ws_keyword && ws_keyword.readyState===WebSocket.OPEN){
+
+ws_keyword.send(JSON.stringify({
+cmd:"add_keyword",
+word:word
+}))
+
+}
+
+input.value=""
+
+}
+
+//////////////////////////////////////////////////////////
+
+function applyServer(){
+
+serverIp=document.getElementById("serverIp").value.trim()
+serverPort=document.getElementById("serverPort").value.trim()
+
+connectKeywordSocket()
+
+}
+
+//////////////////////////////////////////////////////////
+
+function getWsUrl(){
+
+const lang=document.getElementById("lang").value
+return `ws://${serverIp}:${serverPort}?lang=${lang}`
+
+}
+
+//////////////////////////////////////////////////////////
+
+function connectKeywordSocket(){
+
+if(ws_keyword) ws_keyword.close()
+
+const url=getWsUrl()
+
+setStatus("🟡 正在连接服务器...", "status-ok")
+
+ws_keyword=new WebSocket(url)
+
+ws_keyword.onmessage=(msg)=>{
+
+const data=JSON.parse(msg.data)
+
+if(data.type==="keywords"){
+
+keywords=data.keywords
+renderKeywords()
+
+setStatus(`🟢 服务器已连接（${getLangName()}）`, "status-ok")
+
+}
+
+}
+
+ws_keyword.onerror=()=>{
+setStatus("🔴 未连接", "status-error")
+}
+
+}
+
+//////////////////////////////////////////////////////////
+
+window.onload=async()=>{
+
+try{
+
+stream=await navigator.mediaDevices.getUserMedia({audio:true})
+
+}catch(e){
+
+setStatus("🔴 麦克风权限失败", "status-error")
+
+}
+
+connectKeywordSocket()
+
+}
+
+//////////////////////////////////////////////////////////
+
+document.getElementById("lang").onchange=()=>{
+
+connectKeywordSocket()
+
+if(ws_asr){
+ws_asr.close()
+ws_asr=null
+}
+
+if(isRecording){
+document.getElementById("startBtn").click()
+}
+
+}
+
+//////////////////////////////////////////////////////////
+
+document.getElementById("startBtn").onclick=async()=>{
+
+isRecording=true
+
+if(ws_asr) ws_asr.close()
+
+const url=getWsUrl()
+
+ws_asr=new WebSocket(url)
+ws_asr.binaryType="arraybuffer"
+
+ws_asr.onopen=async()=>{
+
+setStatus(`🟢 连接成功（${getLangName()}）`, "status-ok")
+
+audioCtx=new AudioContext({sampleRate:16000})
+
+const source=audioCtx.createMediaStreamSource(stream)
+
+processor=audioCtx.createScriptProcessor(512,1,1)
+
+source.connect(processor)
+processor.connect(audioCtx.destination)
+
+processor.onaudioprocess=(event)=>{
+
+if(ws_asr && ws_asr.readyState===WebSocket.OPEN){
+
+let pcm=event.inputBuffer.getChannelData(0)
+ws_asr.send(pcm.buffer)
+
+}
+
+}
+
+}
+
+ws_asr.onmessage=(msg)=>{
+
+const data=JSON.parse(msg.data)
+handleServerMessage(data)
+
+}
+
+}
+
+//////////////////////////////////////////////////////////
+
+function handleServerMessage(data){
+
+if(data.type==="keywords"){
+keywords=data.keywords
+renderKeywords()
+return
+}
+
+if(data.type==="asr"){
+handleText(data.text,data.alarm)
+return
+}
+
+}
+
+//////////////////////////////////////////////////////////
+
+function handleText(text,alarm){
+
+keywords.forEach(k=>{
+
+if(text.includes(k)){
+text=text.replaceAll(k,`<span class="keyword">${k}</span>`)
+}
+
+})
+
+const box=document.getElementById("result")
+
+box.innerHTML+="📝 "+text+"<br>"
+box.scrollTop=box.scrollHeight
+
+if(alarm) triggerAlarm()
+
+}
+
+//////////////////////////////////////////////////////////
+
+function triggerAlarm(){
+
+if(alarmRunning) return
+
+alarmRunning=true
+
+let flashes=0
+
+let interval=setInterval(()=>{
+
+if(flashes>=6){
+clearInterval(interval)
+document.body.classList.remove("flashRed")
+alarmRunning=false
+return
+}
+
+if(document.body.classList.contains("flashRed")){
+document.body.classList.remove("flashRed")
+}else{
+document.body.classList.add("flashRed")
+playBeep()
+}
+
+flashes++
+
+},300)
+
+}
+
+//////////////////////////////////////////////////////////
+
+function playBeep(){
+
+let ctx=new AudioContext()
+let osc=ctx.createOscillator()
+let gain=ctx.createGain()
+
+osc.connect(gain)
+gain.connect(ctx.destination)
+
+osc.frequency.value=1200
+
+osc.start()
+
+gain.gain.setValueAtTime(1,ctx.currentTime)
+
+gain.gain.exponentialRampToValueAtTime(
+0.0001,
+ctx.currentTime+0.15
+)
+
+osc.stop(ctx.currentTime+0.15)
+
+}
+
+//////////////////////////////////////////////////////////
+
+document.getElementById("stopBtn").onclick=()=>{
+
+isRecording=false
+
+if(ws_asr) ws_asr.close()
+
+if(processor) processor.disconnect()
+if(audioCtx) audioCtx.close()
+
+setStatus("🔴 未连接", "status-error")
+
+document.body.classList.remove("flashRed")
+
+alarmRunning=false
+
+}
+
+</script>
+
+</body>
+</html>

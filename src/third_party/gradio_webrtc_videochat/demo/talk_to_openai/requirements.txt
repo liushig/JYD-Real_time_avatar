@@ -1,0 +1,4 @@
+fastrtc[vad]==0.0.20.rc2
+openai
+twilio
+python-dotenv
