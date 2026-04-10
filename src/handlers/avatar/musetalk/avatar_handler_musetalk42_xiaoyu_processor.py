@@ -18,7 +18,7 @@ from chat_engine.data_models.chat_engine_config_data import ChatEngineConfigMode
 from chat_engine.data_models.runtime_data.data_bundle import DataBundleDefinition, DataBundleEntry, DataBundle, VariableSize
 from handlers.avatar.liteavatar.model.audio_input import SpeechAudio
 from handlers.avatar.liteavatar.liteavatar_worker import Tts2FaceEvent
-from handlers.avatar.musetalk.avatar_musetalk_processor41 import AvatarMuseTalkProcessor
+from handlers.avatar.musetalk.avatar_musetalk_processor41_xiaoyu import AvatarMuseTalkProcessor
 from handlers.avatar.musetalk.avatar_musetalk_algo import MuseAvatarV15
 from handlers.avatar.musetalk.avatar_musetalk_config import AvatarMuseTalkConfig
 from engine_utils.general_slicer import slice_data, SliceContext
@@ -33,7 +33,7 @@ class AvatarMuseTalkContextMultiSession(HandlerContext):
     def __init__(self, session_id: str, processor: AvatarMuseTalkProcessor,
                  event_in_queue: queue.Queue, event_out_queue: queue.Queue,
                  audio_out_queue: queue.Queue, video_out_queue: queue.Queue,
-                 shared_status, interrupt_callback=None):
+                 shared_status, interrupt_callback=None, global_shared_states=None):
         super().__init__(session_id)
         self.processor = processor  # 每个会话独立的 processor
         self.config: Optional[AvatarMuseTalkConfig] = None
@@ -41,7 +41,8 @@ class AvatarMuseTalkContextMultiSession(HandlerContext):
         self.audio_out_queue: queue.Queue = audio_out_queue
         self.video_out_queue: queue.Queue = video_out_queue
         self.event_out_queue: queue.Queue = event_out_queue
-        self.shared_state = shared_status
+        self.shared_state = shared_status  # 会话级别的 shared_state
+        self.global_shared_states = global_shared_states  # 全局的 shared_states
         self.input_slice_context = None
         self.output_data_definitions: Dict[ChatDataType, DataBundleDefinition] = {}
         self.media_out_thread: threading.Thread = None
@@ -98,50 +99,120 @@ class AvatarMuseTalkContextMultiSession(HandlerContext):
                 logger.opt(exception=True).error(f"[{self.session_id}] Failed to set avatar_mode to {mode}: {e}")
 
     def _interrupt_monitor_loop(self):
-        """监控打断标志"""
+        """监控打断标志（同时检查全局和会话级别）"""
         logger.info(f"[{self.session_id}] Interrupt monitor loop started")
+        check_interval = 0.05  # Check every 50ms for real-time responsiveness
+
         while self.loop_running:
             try:
-                time.sleep(0.1)
-                current_time = time.time()
-                if current_time - self.last_interrupt_check_time > 0.1:
-                    self.last_interrupt_check_time = current_time
-                    if hasattr(self.shared_state, 'avatar_mode'):
-                        mode = self.shared_state.avatar_mode
-                        if mode == "ending" and not self._recently_interrupted:
-                            if self.interrupt_callback:
-                                self._recently_interrupted = True
-                                self.interrupt_callback()
-                                threading.Timer(1.0, self._reset_interrupt_flag).start()
+                time.sleep(check_interval)
+
+                current_flag = False
+
+                # 检查会话级别的 avatar_interrupt_flag
+                if hasattr(self.shared_state, 'avatar_interrupt_flag'):
+                    current_flag = self.shared_state.avatar_interrupt_flag
+
+                # 同时检查全局级别的 avatar_interrupt_flag（RTC 服务设置的）
+                if not current_flag and self.global_shared_states and hasattr(self.global_shared_states, 'avatar_interrupt_flag'):
+                    current_flag = self.global_shared_states.avatar_interrupt_flag
+
+                # If flag is True and we have a callback, trigger interrupt
+                if current_flag and self.interrupt_callback:
+                    logger.info(f"[{self.session_id}] [INTERRUPT] Interrupt flag detected, triggering interrupt callback")
+
+                    # 设置最近打断标记
+                    self._recently_interrupted = True
+
+                    # Call the interrupt callback
+                    self.interrupt_callback()
+
+                    # 设置avatar_mode为"ending"
+                    self._set_avatar_mode("ending")
+
+                    # Reset the flag after handling (both local and global)
+                    if hasattr(self.shared_state, 'avatar_interrupt_flag'):
+                        self.shared_state.avatar_interrupt_flag = False
+                    if self.global_shared_states and hasattr(self.global_shared_states, 'avatar_interrupt_flag'):
+                        self.global_shared_states.avatar_interrupt_flag = False
+                    logger.info(f"[{self.session_id}] [INTERRUPT] Interrupt flags reset to False")
+
+                    # 延迟清除最近打断标记
+                    def _clear_recent_interrupt():
+                        time.sleep(0.3)  # 300ms后清除
+                        self._recently_interrupted = False
+
+                    threading.Thread(target=_clear_recent_interrupt, daemon=True).start()
+
             except Exception as e:
                 logger.opt(exception=True).error(f"[{self.session_id}] Error in interrupt monitor: {e}")
+
         logger.info(f"[{self.session_id}] Interrupt monitor loop stopped")
 
-    def _reset_interrupt_flag(self):
-        """重置打断标志"""
-        self._recently_interrupted = False
+    def return_data(self, data: np.ndarray, chat_data_type: ChatDataType) -> None:
+        """打包并提交输出数据"""
+        if not self.loop_running:
+            logger.debug(f"[{self.session_id}] Context loop not running, skipping return_data")
+            return
+
+        definition = self.output_data_definitions.get(chat_data_type)
+        if definition is None:
+            logger.error(f"[{self.session_id}] Definition is None, chat_data_type={chat_data_type}")
+            return
+
+        data_bundle = DataBundle(definition)
+        if chat_data_type.channel_type == EngineChannelType.AUDIO:
+            # 确保音频数据是 float32 且有正确的形状
+            if data is not None:
+                if data.dtype != np.float32:
+                    data = data.astype(np.float32)
+                if data.ndim == 1:
+                    data = data[np.newaxis, ...]
+                elif data.ndim == 2 and data.shape[0] != 1:
+                    data = data[:1, ...]
+            else:
+                logger.error(f"[{self.session_id}] Audio data is None")
+                data = np.zeros([1, 0], dtype=np.float32)
+            data_bundle.set_main_data(data)
+        elif chat_data_type.channel_type == EngineChannelType.VIDEO:
+            # 确保视频数据有 batch 维度
+            data_bundle.set_main_data(data[np.newaxis, ...])
+        else:
+            return
+
+        chat_data = ChatData(type=chat_data_type, data=data_bundle)
+        self.submit_data(chat_data)
 
     def _media_out_loop(self):
         """输出音视频数据"""
         logger.info(f"[{self.session_id}] Media output loop started")
         while self.loop_running:
-            try:
-                audio_data = self.audio_out_queue.get(timeout=0.1)
-                if audio_data and self.data_submitter:
-                    self.data_submitter(audio_data)
-            except queue.Empty:
-                pass
-            except Exception as e:
-                logger.opt(exception=True).error(f"[{self.session_id}] Error in media output: {e}")
+            no_output = True
+            if self.audio_out_queue.qsize() > 0:
+                try:
+                    audio_data = self.audio_out_queue.get_nowait()
+                    self.return_data(audio_data, ChatDataType.AVATAR_AUDIO)
+                    no_output = False
+                except queue.Empty:
+                    pass
+                except Exception as e:
+                    logger.opt(exception=True).error(f"[{self.session_id}] Error in audio output: {e}")
 
-            try:
-                video_data = self.video_out_queue.get(timeout=0.1)
-                if video_data and self.data_submitter:
-                    self.data_submitter(video_data)
-            except queue.Empty:
-                pass
-            except Exception as e:
-                logger.opt(exception=True).error(f"[{self.session_id}] Error in video output: {e}")
+            if self.video_out_queue.qsize() > 0:
+                try:
+                    video_data = self.video_out_queue.get_nowait()
+                    if not isinstance(video_data, np.ndarray):
+                        logger.error(f"[{self.session_id}] video_out_queue got non-ndarray: {type(video_data)}")
+                        continue
+                    self.return_data(video_data, ChatDataType.AVATAR_VIDEO)
+                    no_output = False
+                except queue.Empty:
+                    pass
+                except Exception as e:
+                    logger.opt(exception=True).error(f"[{self.session_id}] Error in video output: {e}")
+
+            if no_output:
+                time.sleep(0.01)
         logger.info(f"[{self.session_id}] Media output loop stopped")
 
     def _event_out_loop(self):
@@ -149,9 +220,31 @@ class AvatarMuseTalkContextMultiSession(HandlerContext):
         logger.info(f"[{self.session_id}] Event output loop started")
         while self.loop_running:
             try:
-                event_data = self.event_out_queue.get(timeout=0.1)
-                if event_data and self.data_submitter:
-                    self.data_submitter(event_data)
+                event = self.event_out_queue.get(timeout=0.1)
+                if isinstance(event, Tts2FaceEvent):
+                    if event == Tts2FaceEvent.SPEAKING_TO_LISTENING:
+                        self.shared_state.enable_vad = True
+                        self._set_avatar_mode("ending")
+                        if self.config and getattr(self.config, 'debug', False):
+                            logger.info(f"[{self.session_id}] shared_state.enable_vad = True, avatar_mode = 'ending'")
+
+                        # 发送 avatar_end 标志
+                        text_def = self.output_data_definitions.get(ChatDataType.AVATAR_TEXT)
+                        if text_def and self.data_submitter:
+                            end_bundle = DataBundle(text_def)
+                            end_bundle.set_main_data("__AVATAR_END__")
+                            end_data = ChatData(type=ChatDataType.AVATAR_TEXT, data=end_bundle)
+                            self.data_submitter.submit(end_data)
+                            logger.info(f"[{self.session_id}] 发送 __AVATAR_END__ 标志")
+
+                    elif hasattr(Tts2FaceEvent, 'SPEAKING') and event == Tts2FaceEvent.SPEAKING:
+                        if not self._recently_interrupted:
+                            self.shared_state.enable_vad = False
+                            self._set_avatar_mode("running")
+                            if self.config and getattr(self.config, 'debug', False):
+                                logger.info(f"[{self.session_id}] shared_state.enable_vad = False, avatar_mode = 'running'")
+                        else:
+                            logger.info(f"[{self.session_id}] Ignoring SPEAKING event due to recent interrupt")
             except queue.Empty:
                 pass
             except Exception as e:
@@ -201,6 +294,7 @@ class HandlerAvatarMusetalkMultiSession(HandlerBase):
         self.session_processors: Dict[str, AvatarMuseTalkProcessor] = {}
         self.session_queues: Dict[str, dict] = {}
         self.session_states: Dict[str, dict] = {}
+        self.session_contexts: Dict[str, AvatarMuseTalkContextMultiSession] = {}  # 保存会话上下文
         self.output_data_definitions: Dict[ChatDataType, DataBundleDefinition] = {}
         self._debug_cache = {}
         self._session_lock = threading.Lock()  # 保护会话字典的锁
@@ -222,13 +316,21 @@ class HandlerAvatarMusetalkMultiSession(HandlerBase):
                 }
                 self.session_queues[session_id] = queues
 
-                # 创建独立的状态
+                # 创建独立的状态（包括独立的 shared_state）
+                class SessionSharedState:
+                    """每个会话独立的共享状态"""
+                    def __init__(self):
+                        self.avatar_interrupt_flag = False
+                        self.avatar_mode = "ending"
+                        self.enable_vad = True
+
                 self.session_states[session_id] = {
                     'current_speech_id': None,
                     'is_interrupted': False,
                     'is_speaking': False,
                     'interrupt_lock': threading.Lock(),
-                    'data_submitter': None
+                    'data_submitter': None,
+                    'shared_state': SessionSharedState()  # 每个会话独立的 shared_state
                 }
 
                 # 创建独立的 processor（共享 avatar 模型）
@@ -279,16 +381,16 @@ class HandlerAvatarMusetalkMultiSession(HandlerBase):
                     del self.session_queues[session_id]
                 if session_id in self.session_states:
                     del self.session_states[session_id]
+                if session_id in self.session_contexts:
+                    del self.session_contexts[session_id]
 
                 logger.info(f"[{session_id}] Session resources cleaned up")
 
     def get_handler_info(self) -> HandlerBaseInfo:
         return HandlerBaseInfo(
             name="AvatarMusetalkMultiSession",
-            data_type=ChatDataType.AVATAR_AUDIO,
             config_model=AvatarMuseTalkConfig,
-            load_priority=100,
-            consume_mode=ChatDataConsumeMode.CONSUME_SINGLE
+            load_priority=-999,
         )
 
     def load(self, engine_config: ChatEngineConfigModel, handler_config: Optional[AvatarMuseTalkConfig] = None):
@@ -383,7 +485,7 @@ class HandlerAvatarMusetalkMultiSession(HandlerBase):
         def interrupt_callback():
             self._handle_interrupt(session_id)
 
-        # 创建会话上下文
+        # 创建会话上下文 - 使用会话独立的 shared_state，同时传入全局 shared_states
         context = AvatarMuseTalkContextMultiSession(
             session_id,
             processor,
@@ -391,8 +493,9 @@ class HandlerAvatarMusetalkMultiSession(HandlerBase):
             queues['event_out'],
             queues['audio_out'],
             queues['video_out'],
-            session_context.shared_states,
-            interrupt_callback=interrupt_callback
+            state['shared_state'],  # 使用会话独立的 shared_state
+            interrupt_callback=interrupt_callback,
+            global_shared_states=session_context.shared_states  # 传入全局 shared_states
         )
         context.output_data_definitions = self.output_data_definitions
         context.config = handler_config
@@ -408,6 +511,9 @@ class HandlerAvatarMusetalkMultiSession(HandlerBase):
             slice_size=output_audio_sample_rate,
             slice_axis=0,
         )
+
+        # 保存 context 到字典
+        self.session_contexts[session_id] = context
 
         logger.info(f"[{session_id}] Context created successfully")
         return context
@@ -435,7 +541,9 @@ class HandlerAvatarMusetalkMultiSession(HandlerBase):
 
         with state['interrupt_lock']:
             if state['is_interrupted']:
-                logger.info(f"[{session_id}] Already in interrupted state, skipping")
+                logger.info(f"[{session_id}] Already in interrupted state, ensuring reset timer")
+                # 即使已经在打断状态，也要确保重置定时器被触发
+                threading.Timer(0.1, lambda: self._reset_interrupt_flag(session_id)).start()
                 return
 
             state['is_interrupted'] = True
@@ -464,6 +572,9 @@ class HandlerAvatarMusetalkMultiSession(HandlerBase):
             state['current_speech_id'] = None
             logger.info(f"[{session_id}] Interrupt handling completed")
 
+            # 发送 avatar_end 信号
+            self._send_avatar_end(session_id)
+
             # 重置打断标志
             threading.Timer(0.1, lambda: self._reset_interrupt_flag(session_id)).start()
 
@@ -475,8 +586,49 @@ class HandlerAvatarMusetalkMultiSession(HandlerBase):
                 state['is_interrupted'] = False
                 logger.info(f"[{session_id}] Interrupt flag reset")
 
+    def _send_avatar_end(self, session_id: str):
+        """发送 avatar_end 信号"""
+        context = self.session_contexts.get(session_id)
+        if not context:
+            logger.warning(f"[{session_id}] No context found for sending avatar_end")
+            return
+
+        try:
+            text_def = context.output_data_definitions.get(ChatDataType.AVATAR_TEXT)
+            if text_def and context.data_submitter:
+                end_bundle = DataBundle(text_def)
+                end_bundle.set_main_data("__AVATAR_END__")
+                end_data = ChatData(type=ChatDataType.AVATAR_TEXT, data=end_bundle)
+                context.data_submitter.submit(end_data)
+                logger.info(f"[{session_id}] Sent __AVATAR_END__ signal after interrupt")
+            else:
+                logger.warning(f"[{session_id}] No AVATAR_TEXT definition or data_submitter found")
+        except Exception as e:
+            logger.opt(exception=True).error(f"[{session_id}] Failed to send avatar_end: {e}")
+
     def get_handler_detail(self, session_context: SessionContext, context: HandlerContext) -> HandlerDetail:
-        return HandlerDetail()
+        context = cast(AvatarMuseTalkContextMultiSession, context)
+        inputs = {
+            ChatDataType.AVATAR_AUDIO: HandlerDataInfo(
+                type=ChatDataType.AVATAR_AUDIO,
+                input_consume_mode=ChatDataConsumeMode.ONCE,
+            )
+        }
+        outputs = {
+            ChatDataType.AVATAR_AUDIO: HandlerDataInfo(
+                type=ChatDataType.AVATAR_AUDIO,
+                definition=context.output_data_definitions[ChatDataType.AVATAR_AUDIO],
+            ),
+            ChatDataType.AVATAR_VIDEO: HandlerDataInfo(
+                type=ChatDataType.AVATAR_VIDEO,
+                definition=context.output_data_definitions[ChatDataType.AVATAR_VIDEO],
+            ),
+            ChatDataType.AVATAR_TEXT: HandlerDataInfo(
+                type=ChatDataType.AVATAR_TEXT,
+                definition=context.output_data_definitions[ChatDataType.AVATAR_TEXT],
+            ),
+        }
+        return HandlerDetail(inputs=inputs, outputs=outputs)
 
     def handle(self, context: HandlerContext, inputs: ChatData, output_definitions: Dict[ChatDataType, HandlerDataInfo]):
         """处理输入数据"""
@@ -544,10 +696,22 @@ class HandlerAvatarMusetalkMultiSession(HandlerBase):
                     logger.info(f"[{session_id}] Interrupted, not sending speech_end")
                     return
 
+            # Flush remaining audio from slice context
+            end_segment = context.input_slice_context.flush()
+            if end_segment is None:
+                logger.warning(f"[{session_id}] Last segment is empty: speech_id={speech_id}, filling with silence")
+                fps = context.config.fps if hasattr(context.config, "fps") else 25
+                frame_len = input_sample_rate // fps
+                # 2 frames audio for silence
+                zero_frames = np.zeros([4 * frame_len], dtype=np.float32)
+                audio_data = zero_frames.tobytes()
+            else:
+                audio_data = end_segment.tobytes()
+
             speech_audio = SpeechAudio(
                 speech_id=speech_id,
                 end_of_speech=True,
-                audio_data=b'',
+                audio_data=audio_data,
                 sample_rate=input_sample_rate
             )
             context.processor.add_audio(speech_audio)

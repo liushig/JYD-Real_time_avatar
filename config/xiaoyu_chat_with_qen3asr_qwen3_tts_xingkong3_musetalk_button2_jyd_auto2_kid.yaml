@@ -10,7 +10,7 @@ default:
     log_level: "INFO"
   service:
     host: "0.0.0.0"
-    port: 8026
+    port: 8028
     cert_file: "ssl_certs/localhost.crt"
     cert_key: "ssl_certs/localhost.key"
   chat_engine:
@@ -109,7 +109,7 @@ default:
         fps: 20 # Video frame rate (output_audio_sample_rate 24000;Video frame rate:15、16、20、24、25)
         batch_size: 8 # Batch processing frame count, must be greater than 2
         # avatar_video_path: "src/handlers/avatar/musetalk/MuseTalk/data/video/wmnoact_head_noact5.mp4"
-        avatar_video_path: "src/handlers/avatar/musetalk/MuseTalk/data/video/kid.mp4"
+        avatar_video_path: "src/handlers/avatar/musetalk/MuseTalk/data/video/kid2.mp4"
 
 
         avatar_model_dir: "models/musetalk/avatar_model"  # Default avatar model directory

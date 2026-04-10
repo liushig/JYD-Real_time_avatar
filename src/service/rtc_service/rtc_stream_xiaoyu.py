@@ -187,6 +187,9 @@ class RtcStream(AsyncAudioVideoStreamHandler):
                             logger.info(f"[RTC推送] avatar_end附加问诊进度: {diagnosis_progress}")
                         self.chat_channel.send(json.dumps(end_data))
                         logger.info(f"[RTC推送] 发送 avatar_end 到前端 (session: {self.session_id})")
+                        # 重置enable_vad，允许下一轮对话
+                        self.client_session_delegate.shared_states.enable_vad = True
+                        logger.info(f"[RTC] avatar_end后重置enable_vad=True，允许下一轮对话")
                         continue
 
                     current_role = 'human' if chat_data.type == ChatDataType.HUMAN_TEXT else 'avatar'
