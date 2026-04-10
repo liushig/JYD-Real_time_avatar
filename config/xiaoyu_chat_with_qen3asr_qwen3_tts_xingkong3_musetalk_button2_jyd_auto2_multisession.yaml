@@ -86,27 +86,7 @@ default:
         timeout: 60
 
 
-      # GPT_SoVITS:
-      #   enabled: True
-      #   module: tts/gptsovits/gpt_sovits_handler3_wangxu
-      #   server_url: "http://localhost:9003" 
-      #   ref_audio_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/GPT-SoVITS/GPT_SoVITS/test/wangxu.wav"
-      #   ref_text: "希望我们都能像他一样，不行，他想了一下，我们不能对国王说，这是在撒谎。"
-      #   ref_language: "中文"
-      #   target_language: "中文"
-      #   sample_rate: 24000
-      #   timeout: 60
-
-      # MiniCPM-o:
-      #   enabled: True
-      #   module: llm/minicpm/llm_handler_minicpm
-      #   model_name: "MiniCPM-o-2_6"
-      #   # model_name: "MiniCPM-o-2_6-int4"
-      #   voice_prompt: "你不是通义千问，你不是阿里云，你是一名由竞业达开发的数字老师。用简短的两三句对话来回答用户的问题，并在对话内容中加入合适的标点符号，不需要讨论标点符号相关的内容。" #模仿输入音频中的声音特征。你不是通义千问，你不是阿里云，你是一名由竞业达开发的数字老师。用简短的两三句对话来回答用户的问题，并在对话内容中加入合适的标点符号，不需要讨论标点符号相关的内容。
-      #   assistant_prompt: ""
-      #   enable_video_input: True
-      #   skip_video_frame: 2
-
+    
       AvatarMusetalk:
         module: avatar/musetalk/avatar_handler_musetalk42_xiaoyu_processor
         fps: 20 # Video frame rate (output_audio_sample_rate 24000;Video frame rate:15、16、20、24、25)
