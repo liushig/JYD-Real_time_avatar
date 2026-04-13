@@ -194,15 +194,16 @@ class RtcStream(AsyncAudioVideoStreamHandler):
                 if timestamp[0] / timestamp[1] < self.stream_start_delay:
                     return
                 logger.info(f'on_chat_datachannel: {message}')
-    
+
                 if message['type'] == 'stop_chat':
-                    self.client_session_delegate.emit_signal(
-                        ChatSignal(
-                            type=ChatSignalType.INTERRUPT,
-                            source_type=ChatSignalSourceType.CLIENT,
-                            source_name="rtc",
-                        )
-                    )
+                    logger.info(f"[RTC] 收到stop_chat，设置所有打断标志")
+                    # 直接设置所有中断标志
+                    self.client_session_delegate.shared_states.interrupt_flag = True
+                    self.client_session_delegate.shared_states.button_interrupt_flag = True
+                    self.client_session_delegate.shared_states.tts_interrupt_flag = True
+                    self.client_session_delegate.shared_states.avatar_interrupt_flag = True
+                    self.client_session_delegate.shared_states.llm_interrupt_flag = True
+                    logger.info("[RTC] 已设置所有打断标志为True")
                 elif message['type'] == 'chat':
                     channel.send(json.dumps({'type': 'avatar_end'}))
                     if self.client_session_delegate.shared_states.enable_vad is False:
