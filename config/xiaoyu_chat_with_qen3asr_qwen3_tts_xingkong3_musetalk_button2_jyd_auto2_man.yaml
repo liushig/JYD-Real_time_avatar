@@ -66,7 +66,7 @@ default:
 
       LLMWorkflowStreaming:
         enabled: True
-        module: llm/xingkong3/llm_handler_zhongyi_streaming
+        module: llm/xingkong3/llm_handler_zhongyi_img_streaming
         api_url: "http://188.18.18.149:5001/v1/chat-messages"  # workflows
         # api_url: "http://188.18.18.106:5001/v1/chat-messages"  # chat
         api_key: "app-Ae9yzHN6RJ100e6ZEBbYe6Ez"  #app-BgSVnRI9NnpUpO5DJFTlx1P3 #chat   ；app-Mbzurid5vkLrmjKuo4rERLDO #Workflow
@@ -75,7 +75,7 @@ default:
 
       FasterQwen3TTS:
         enabled: True
-        module: tts/faster-qwen3-tts/handler/faster_qwen3_tts_handler2_xiaoyu   #handler  没有分局逻辑，比较卡
+        module: tts/faster-qwen3-tts/handler/faster_qwen3_tts_handler3_img   
         server_url: "http://localhost:9006"
         # speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_wangxu_06b.pt"
         # speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_wangxu_pro.pt"

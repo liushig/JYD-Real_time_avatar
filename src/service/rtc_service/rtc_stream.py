@@ -163,7 +163,17 @@ class RtcStream(AsyncAudioVideoStreamHandler):
     def set_channel(self, channel):
             super().set_channel(channel)
             self.chat_channel = channel
-            
+
+            # 保存 DataChannel 引用和事件循环到 shared_states，供 TTS handler 使用
+            if self.client_session_delegate and self.client_session_delegate.shared_states:
+                self.client_session_delegate.shared_states.broadcast_rtc_channel = channel
+                # 保存当前事件循环
+                try:
+                    import asyncio
+                    self.client_session_delegate.shared_states.broadcast_event_loop = asyncio.get_event_loop()
+                except Exception as e:
+                    logger.warning(f"[RTC] 无法获取事件循环: {e}")
+
             async def process_chat_history():
                 role = None
                 chat_id = None
@@ -175,8 +185,8 @@ class RtcStream(AsyncAudioVideoStreamHandler):
                     current_role = 'human' if chat_data.type == ChatDataType.HUMAN_TEXT else 'avatar'
                     chat_id = uuid.uuid4().hex if current_role != role else chat_id
                     role = current_role
-                    self.chat_channel.send(json.dumps({'type': 'chat', 'message': chat_data.data.get_main_data(), 
-                                                        'id': chat_id, 'role': current_role}))  
+                    self.chat_channel.send(json.dumps({'type': 'chat', 'message': chat_data.data.get_main_data(),
+                                                        'id': chat_id, 'role': current_role}))
             asyncio.create_task(process_chat_history())
                 
             @channel.on("message")
@@ -204,6 +214,76 @@ class RtcStream(AsyncAudioVideoStreamHandler):
                     self.client_session_delegate.shared_states.avatar_interrupt_flag = True
                     self.client_session_delegate.shared_states.llm_interrupt_flag = True
                     logger.info("[RTC] 已设置所有打断标志为True")
+                elif message['type'] == 'broadcast_text':
+                    logger.info(f"[RTC] 收到broadcast_text，直接播报文字：{message.get('data', '')}")
+                    # 直接生成AVATAR_TEXT，跳过大模型
+                    from uuid import uuid4
+                    import re
+
+                    broadcast_text = message.get('data', '')
+                    if not broadcast_text:
+                        logger.warning("[RTC] broadcast_text为空，忽略")
+                        return
+
+                    # 分句逻辑：按照标点符号分句
+                    sentence_endings = ['。', '！', '？', '；', '…', '.', '!', '?', ';', '\n']
+                    sentences = []
+                    current_sentence = ""
+
+                    for char in broadcast_text:
+                        current_sentence += char
+                        if char in sentence_endings:
+                            if current_sentence.strip():
+                                sentences.append(current_sentence.strip())
+                            current_sentence = ""
+
+                    # 添加剩余的文字
+                    if current_sentence.strip():
+                        sentences.append(current_sentence.strip())
+
+                    # 如果没有分句，直接使用原文
+                    if not sentences:
+                        sentences = [broadcast_text]
+
+                    logger.info(f"[RTC] broadcast_text分句结果：{len(sentences)}句")
+
+                    # 逐句发送到TTS
+                    timestamp = self.client_session_delegate.get_timestamp()
+                    text_definition = self.client_session_delegate.input_data_definitions.get(EngineChannelType.TEXT)
+
+                    if text_definition:
+                        from chat_engine.data_models.runtime_data.data_bundle import DataBundle
+                        speech_id = str(uuid4())
+
+                        for i, sentence in enumerate(sentences):
+                            # 为每个句子生成唯一的 sentence_id
+                            sentence_id = f"{speech_id}_sentence_{i}"
+
+                            data_bundle = DataBundle(text_definition)
+                            data_bundle.set_main_data(sentence)
+                            data_bundle.add_meta('speech_id', speech_id)
+                            data_bundle.add_meta('sentence_id', sentence_id)  # 新增 sentence_id
+                            # 最后一句标记为结束
+                            is_last = (i == len(sentences) - 1)
+                            data_bundle.add_meta('avatar_text_end', is_last)
+
+                            chat_data = ChatData(
+                                source="broadcast",
+                                type=ChatDataType.AVATAR_TEXT,
+                                data=data_bundle,
+                                timestamp=timestamp,
+                            )
+
+                            # 将 sentence_id 和文字的映射存储到 shared_states
+                            if self.client_session_delegate.shared_states.broadcast_subtitle_map is not None:
+                                self.client_session_delegate.shared_states.broadcast_subtitle_map[sentence_id] = sentence
+                                logger.info(f"[RTC] 存储字幕映射: {sentence_id} -> {sentence}")
+
+                            # 直接提交到数据流，进入TTS+MuseTalk
+                            self.client_session_delegate.data_submitter.submit(chat_data)
+                            logger.info(f"[RTC] 已提交broadcast_text第{i+1}/{len(sentences)}句：{sentence}")
+                    else:
+                        logger.error("[RTC] 无法获取TEXT定义，broadcast_text失败")
                 elif message['type'] == 'chat':
                     channel.send(json.dumps({'type': 'avatar_end'}))
                     if self.client_session_delegate.shared_states.enable_vad is False:

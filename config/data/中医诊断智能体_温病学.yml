@@ -1,0 +1,1941 @@
+app:
+  description: 用于实时互动数字人
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: 中医诊断智能体_温病学
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: langgenius/xinference:0.0.3@2f59f67f45ca4f626aaeef0d9c656cc0e38ab9fbf2c9b4673e3e20162eed9e4f
+    version: null
+kind: app
+version: 0.4.0
+workflow:
+  conversation_variables:
+  - description: 问诊进度数据
+    id: 0c488b63-83e5-484b-823f-c25483933dc1
+    name: cur_porgressdata
+    selector:
+    - conversation
+    - cur_porgressdata
+    value:
+      既往史: null
+      现病史: null
+      过敏史: null
+    value_type: object
+  - description: 图片数据
+    id: ee0a2c30-060f-4f1e-95fc-5c68006873f5
+    name: figure
+    selector:
+    - conversation
+    - figure
+    value: ''
+    value_type: string
+  - description: 量化进度表
+    id: 2d9006d1-36e3-4044-92c1-4225a59a563a
+    name: Schedule
+    selector:
+    - conversation
+    - Schedule
+    value: ''
+    value_type: string
+  - description: 当前对话
+    id: 60ed3ace-d745-4373-a05c-18d83e9b52f9
+    name: Conversation
+    selector:
+    - conversation
+    - Conversation
+    value: []
+    value_type: array[string]
+  - description: 问诊进度
+    id: 4fca3079-2d42-48be-9873-905d8428d28e
+    name: Progress
+    selector:
+    - conversation
+    - Progress
+    value: '"{\"现病史采集\": \"\", \"既往史采集\": \"\", \"过敏史采集\": \"\", \"主诉采集\": \"\", \"闻诊采集\":
+      \"\", \"望诊采集\": \"\", \"切诊采集\": \"\"}"'
+    value_type: string
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 10
+        file_size_limit: 500
+        image_file_size_limit: 15
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: 医生您好，我身体不太舒服
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: assigner
+      id: llm-source-1762137739797-target
+      selected: false
+      source: llm
+      sourceHandle: source
+      target: '1762137739797'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: assigner
+        targetType: llm
+      id: 1762137739797-source-1762137478471-target
+      selected: false
+      source: '1762137739797'
+      sourceHandle: source
+      target: '1762137478471'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 1762140992494-true-1762137802571-target
+      selected: false
+      source: '1762140992494'
+      sourceHandle: 'true'
+      target: '1762137802571'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: assigner
+      id: 1762137802571-source-1762141036905-target
+      selected: false
+      source: '1762137802571'
+      sourceHandle: source
+      target: '1762141036905'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: assigner
+        targetType: llm
+      id: 1762141036905-source-1762137478471-target
+      selected: false
+      source: '1762141036905'
+      sourceHandle: source
+      target: '1762137478471'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: assigner
+        targetType: assigner
+      id: 1762141313568-source-1762137724191-target
+      selected: false
+      source: '1762141313568'
+      sourceHandle: source
+      target: '1762137724191'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: assigner
+      id: 1762137478471-source-1762155585258-target
+      selected: false
+      source: '1762137478471'
+      sourceHandle: source
+      target: '1762155585258'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: assigner
+        targetType: code
+      id: 1762155585258-source-1762138910855-target
+      selected: false
+      source: '1762155585258'
+      sourceHandle: source
+      target: '1762138910855'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: llm-source-1762158696174-target
+      selected: false
+      source: llm
+      sourceHandle: source
+      target: '1762158696174'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: assigner
+      id: 1762140992494-true-1762417328014-target
+      selected: false
+      source: '1762140992494'
+      sourceHandle: 'true'
+      target: '1762417328014'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: assigner
+        targetType: question-classifier
+      id: 1762137724191-source-1762417602639-target
+      selected: false
+      source: '1762137724191'
+      sourceHandle: source
+      target: '1762417602639'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: llm
+      id: 1762417602639-2-llm-target
+      selected: false
+      source: '1762417602639'
+      sourceHandle: '2'
+      target: llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: answer
+        targetType: llm
+      id: 1762418261687-source-llm-target
+      selected: false
+      source: '1762418261687'
+      sourceHandle: source
+      target: llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1762418876960-source-1762418041663-target
+      selected: false
+      source: '1762418876960'
+      sourceHandle: source
+      target: '1762418041663'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: assigner
+      id: 1762419163501-true-1762141313568-target
+      selected: false
+      source: '1762419163501'
+      sourceHandle: 'true'
+      target: '1762141313568'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: if-else
+      id: 1762419163501-true-1762140992494-target
+      selected: false
+      source: '1762419163501'
+      sourceHandle: 'true'
+      target: '1762140992494'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: code
+      id: 1761892400942-source-1762505728969-target
+      selected: false
+      source: '1761892400942'
+      sourceHandle: source
+      target: '1762505728969'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: if-else
+      id: 1762505728969-source-1762419163501-target
+      selected: false
+      source: '1762505728969'
+      sourceHandle: source
+      target: '1762419163501'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: if-else
+      id: 1762418041663-source-1762916804795-target
+      selected: false
+      source: '1762418041663'
+      sourceHandle: source
+      target: '1762916804795'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: template-transform
+      id: 1762916804795-true-1762916691034-target
+      selected: false
+      source: '1762916804795'
+      sourceHandle: 'true'
+      target: '1762916691034'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: template-transform
+        targetType: answer
+      id: 1762916691034-source-1762418261687-target
+      selected: false
+      source: '1762916691034'
+      sourceHandle: source
+      target: '1762418261687'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 1762916804795-false-llm-target
+      selected: false
+      source: '1762916804795'
+      sourceHandle: 'false'
+      target: llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1762494946084-source-1762935918266-target
+      selected: false
+      source: '1762494946084'
+      sourceHandle: source
+      target: '1762935918266'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: answer
+      id: 1762935918266-source-1762497340969-target
+      selected: false
+      source: '1762935918266'
+      sourceHandle: source
+      target: '1762497340969'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: if-else
+      id: 1762417602639-1-1763085024546-target
+      selected: false
+      source: '1762417602639'
+      sourceHandle: '1'
+      target: '1763085024546'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 1763085024546-true-1762418876960-target
+      selected: false
+      source: '1763085024546'
+      sourceHandle: 'true'
+      target: '1762418876960'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 1763085024546-false-llm-target
+      selected: false
+      source: '1763085024546'
+      sourceHandle: 'false'
+      target: llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1767575606152-source-1767575643891-target
+      selected: false
+      source: '1767575606152'
+      sourceHandle: source
+      target: '1767575643891'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      id: 1762419163501-false-1767576815682-target
+      selected: false
+      source: '1762419163501'
+      sourceHandle: 'false'
+      target: '1767576815682'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1767576815682-source-1762487403971-target
+      selected: false
+      source: '1767576815682'
+      sourceHandle: source
+      target: '1762487403971'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1767576815682-source-1767575592150-target
+      selected: false
+      source: '1767576815682'
+      sourceHandle: source
+      target: '1767575592150'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1767576815682-source-1767575606152-target
+      selected: false
+      source: '1767576815682'
+      sourceHandle: source
+      target: '1767575606152'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1767576815682-source-1767575646749-target
+      selected: false
+      source: '1767576815682'
+      sourceHandle: source
+      target: '1767575646749'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1767575592150-source-1767575643891-target
+      selected: false
+      source: '1767575592150'
+      sourceHandle: source
+      target: '1767575643891'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1762487403971-source-1767575643891-target
+      selected: false
+      source: '1762487403971'
+      sourceHandle: source
+      target: '1767575643891'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1767575646749-source-1767575643891-target
+      selected: false
+      source: '1767575646749'
+      sourceHandle: source
+      target: '1767575643891'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1767575643891-source-1762494946084-target
+      selected: false
+      source: '1767575643891'
+      sourceHandle: source
+      target: '1762494946084'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: assigner
+      id: 1762138910855-source-1767586746328-target
+      source: '1762138910855'
+      sourceHandle: source
+      target: '1767586746328'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 开始
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: 病案数据
+          max_length: 258000
+          options: []
+          placeholder: ''
+          required: false
+          type: paragraph
+          variable: data
+        - default: ''
+          hint: ''
+          label: 病历
+          max_length: 258000
+          options: []
+          placeholder: ''
+          required: false
+          type: paragraph
+          variable: record
+      height: 113
+      id: '1761892400942'
+      position:
+        x: -280.0000131149677
+        y: 1070.524406087552
+      positionAbsolute:
+        x: -280.0000131149677
+        y: 1070.524406087552
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        memory:
+          query_prompt_template: '{{#sys.query#}}
+
+
+            {{#sys.files#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 10
+        model:
+          completion_params:
+            max_tokens: 16201
+            presence_penalty: -0.3
+            temperature: 0
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: 68f6b855-6565-499c-bc7f-d8dcbf8a2e93
+          role: system
+          text: "你现在是一位虚拟病人，身份信息如下：\n\n【病案设定】\n{{#1762505728969.text_output#}}\n\n\
+            【角色设定】\n- 你的唯一角色遵循病案设定，你要完全以病人的身份回答。  \n- 你的回答应自然、符合生活逻辑、带有情感色彩。  \n-\
+            \ 你不能引用医学术语或诊断名词（那是医生的工作），只能描述自己的主观感受。  \n- 如果医生（用户）询问与症状、饮食、情绪、月经、睡眠、体质、环境、发病诱因等相关的问题，你应结合上述病案背景，合理扩展细节回答。\
+            \  \n- 如果医生提问含糊，你可以请求他说明得更具体些（例如“医生，您是问我最近有没有吃什么容易过敏的东西吗？”）。  \n- 请不要反客为主，不要主动询问治疗方案，你只需如实回答。\
+            \  \n- 每次回答控制在1～4句话之间，像真实门诊中病人描述症状那样自然\n\n【输出内容控制】\n- 禁止输出历史对话的数据，输出内容符合真实问诊对话场景，为简单的对话内容。\n\
+            \n【对话流程】\n- 等待医生（用户）提问，不要自己开场。  \n- 医生将逐步进行“问诊”，你要按照实际就诊的对话风格回答。  \n-\
+            \ 如果医生说“诊断结束”或“本轮问诊结束”，你就停止回答。\n\n请从现在开始进入角色，等待医生提问。\n"
+        selected: false
+        title: 医患智能体
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: llm
+      position:
+        x: 4097.995413334133
+        y: 416.0420210055561
+      positionAbsolute:
+        x: 4097.995413334133
+        y: 416.0420210055561
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            max_tokens: 26301
+            temperature: 0.1
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: 879eeeaa-4c87-4c77-9ba7-47a55a7b7258
+          role: system
+          text: "你是一个严格的中医问诊进度更新器（deterministic）。你的**唯一**任务是：  \n根据【标准量化医案模板】与【当前医患对话】，判断本轮对话**仅包含**哪些标准模板中已存在的具体条目（按编号），并**仅将那些被对话直接证实的条目**填入当前进度\
+            \ JSON。**不能**基于推测、常识或模板上下文自动补全或填充任何未被证实的条目。\n\n严格执行下面的步骤并遵守所有规则（逐条执行）：\n\
+            \n1. 输入数据：\n   - 标准量化医案模板（以文本形式，包含若干段：如“现病史采集：\\n1. ...\\n2. ...\\n”）\n\
+            \   - 当前医患对话（一个字符串或数组，包含医生和病人的本轮问答，仅本轮）\n   - 当前医案进度（一个 JSON 对象，含七个键及其当前值，值为字符串或空字符串）\n\
+            \n2. 逐条比较流程（对标准模板中每一条编号项按顺序进行）：\n   a. 从标准模板中分别抽出每个维度下的编号条目，保留编号（如“1.”、“2.”）和完整文本。\
+            \  \n   b. 对于每一个编号条目，只在**当前医患对话**中寻找**直接证据**：即对话文本中必须包含该条目中的**关键短语或明确等价表达**（允许极短的同义省略，如“出汗当风”⇔“出了一身汗，吹了风”）。\
+            \  \n   c. **证据要求**：至少有一句病人或医生的话明确提到该条目的核心事实（例如条目核心为“前天参加冬季长跑后汗出当风”，则对话必须出现“前天”“长跑”“出汗/一身汗/汗出”“吹风/当风”等其中**两项或明确等价表达中的一项且包含时间信息**）。\
+            \  \n   d. 若满足上述“直接证据”要求，视为该编号被证实；否则视为未证实。**绝不**因为模板中同维度其他条目被证实就把本编号标记为证实。\n\
+            \n3. 更新策略：\n   - 对每个被证实的编号，将 **该编号在标准模板中的完整文本**（含编号）写入对应维度的当前进度中（追加或替换该维度中相应编号位置的内容），保持其余未被证实编号不变。\
+            \  \n   - 若当前进度中已有该编号的同文本，则保持不变。  \n   - **绝不**将某维度未被证实的编号填为标准文本（也不整段替换该维度）。\
+            \  \n   - 如果本轮对话未证实任何新编号，则**原样**返回当前进度 JSON（完全不修改）。\n\n4. 输出格式（强制）：\n\
+            \   - 仅输出一个 JSON 对象（单行或多行皆可），必须包含以下三个顶级键（**严格顺序或任意顺序皆可，但必须全部存在**）：  \n\
+            \     `[\"现病史采集\",\"既往史采集\",\"过敏史采集\"]`  \n   - 每个键的值必须是字符串：包含已确认的编号条目（保持标准模板的原文和编号并用换行分隔，使用中文句号），若没有已确认项则保持当前进度中的原值（可能为空字符串）。\
+            \  \n   - **禁止**在输出中添加任何注释、解释文字、markdown 代码块或额外字段。  \n   - 如果无法解析输入，仍然必须输出原始\
+            \ `当前医案进度` JSON（回退策略）。\n\n5. 匹配优先级与保守性：\n   - 优先采取**保守匹配**：只有在对话中存在**明确证据**时才匹配。若无法判定“明确”，则**不匹配**。\
+            \  \n   - 绝不使用模板上下文进行填充或猜测体温、是否发汗等未被直接提及的内容。\n\n6. 验证与合规：\n   - 输出前进行自检：确保\
+            \ JSON 可解析且包含三个键；若自检失败则直接输出原始进度 JSON。\n\n现在请根据以上严格规则处理下面输入：  \n\n当前医患对话：\n\
+            {{#conversation.Conversation#}}\n\n当前医案进度：\n{{#conversation.Progress#}}\n\
+            \n标准量化医案：\n{{#conversation.Schedule#}}\n仅输出更新后的医案进度 JSON（无其他内容）。\n"
+        - id: f2201089-6e7a-4914-a968-5915de78a6db
+          role: user
+          text: '当前医患对话：
+
+            {{#conversation.Conversation#}}
+
+
+            标准量化医案：
+
+            {{#conversation.Schedule#}}
+
+
+            当前医案进度：
+
+            {{#conversation.Progress#}}
+
+            请输出更新后的医案进度 JSON。'
+        selected: false
+        title: 进度判断
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1762137478471'
+      position:
+        x: 4951
+        y: 374.5
+      positionAbsolute:
+        x: 4951
+        y: 374.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        desc: 收集当前的对话组
+        items:
+        - input_type: variable
+          operation: append
+          value:
+          - sys
+          - query
+          variable_selector:
+          - conversation
+          - Conversation
+          write_mode: over-write
+        selected: false
+        title: 变量赋值
+        type: assigner
+        version: '2'
+      height: 111
+      id: '1762137724191'
+      position:
+        x: 1443.9603154450695
+        y: 293
+      positionAbsolute:
+        x: 1443.9603154450695
+        y: 293
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        items:
+        - input_type: variable
+          operation: append
+          value:
+          - llm
+          - text
+          variable_selector:
+          - conversation
+          - Conversation
+          write_mode: over-write
+        selected: false
+        title: 变量赋值 2
+        type: assigner
+        version: '2'
+      height: 83
+      id: '1762137739797'
+      position:
+        x: 4619
+        y: 374.5
+      positionAbsolute:
+        x: 4619
+        y: 374.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            max_tokens: 14401
+            temperature: 0
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: eb22a227-18f0-4e43-8f35-720e81ae7b59
+          role: system
+          text: "你是一名资深中医临床助手，任务是将原始病例文本拆解为结构化的“问诊进度量化表”。\n\n【目标】\n请仔细分析输入的中医病例文本，按以下七个问诊维度提取并量化信息：\n\
+            \n1. 现病史采集  \n2. 既往史采集  \n3. 过敏史采集  \n\n\n每个维度下，请：\n- 使用编号（1.、2.…）列出要点；\n\
+            - 每条要点应简明、清晰，体现一次可采集的信息；\n- 若无相关信息，请输出“无”；\n- 不要重复同一条内容；\n- 不要输出额外解释或总结。\n\
+            \n【输出格式】\n请严格按照以下格式输出（Markdown 或纯文本均可）：\n\n现病史采集：\n1. …\n2. …\n（按内容列出）\n\
+            \n既往史采集：\n1. …\n\n过敏史采集：\n1. …\n\n\n【示例】\n输入病例（示例）：\n“姓名:张某 性别:男 年龄:18岁\
+            \ 主诉:咳嗽痰稀白、恶寒发热2天。现病史:前天参加冬季长跑后汗出当风，当晚自觉头痛、肢体酸重，夜间发冷，加衣被寒冷仍不能缓解，体温38.6℃，轻微咳嗽，无汗。服百服宁后汗出，体温降至37.1℃。次日咳嗽加重，咳痰稀白，喉痒微痛，恶寒发热，无汗，鼻塞流清。既往史:无。中医四诊情况:咳嗽频作，痰稀白，喉痒微痛，鼻塞流清，恶寒发热，无汗，头痛，肢体酸重。舌淡红，苔薄白，脉浮紧。”\n\
+            \n输出：\n现病史采集：\n1. 前天参加冬季长跑后汗出当风。\n2. 当晚自觉头痛、肢体酸重，卧床休息。\n3. 夜间发冷，加衣被仍寒冷不解。\n\
+            4. 体温38.6℃，头痛加重，轻微咳嗽，无汗。\n5. 服百服宁2片后出汗退热，1小时后体温37.1℃。\n6. 次日起咳嗽加重，症见咳嗽频作、咳痰稀白、喉痒微痛。\n\
+            7. 仍恶寒发热、无汗、鼻塞流清涕。\n\n既往史采集：\n1. 无。\n\n过敏史采集：\n1. 无药物及食物过敏史记载。\n\n【现在开始】\n\
+            请对以下病例文本进行同样的量化拆解：\n\n{{#1762505728969.text_output#}}\n"
+        selected: false
+        title: 量化医案
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1762137802571'
+      position:
+        x: 4288.148698354998
+        y: 666
+      positionAbsolute:
+        x: 4288.148698354998
+        y: 666
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        code: "import json\nimport re\n\ndef extract_items_from_text(text: str):\n\
+          \    \"\"\"\n    从一段文本中提取编号条目或句子条目，优先识别 1. xx 形式；\n    若没有编号项则回退按中文句号或换行分割。\n\
+          \    返回一个条目列表（已 strip）。\n    \"\"\"\n    if not text:\n        return []\n\
+          \    text = text.strip()\n    # 优先找 \"1. 内容\" 类型的编号项（支持多行或连写）\n    numbered_pattern\
+          \ = re.compile(r'\\d+\\.\\s*([^\\\\n]+?)(?=(?:\\d+\\.\\s)|$)', re.S)\n \
+          \   matches = numbered_pattern.findall(text)\n    if matches:\n        return\
+          \ [m.strip() for m in matches if m.strip()]\n    # 回退：按换行或中文句号分割\n    parts\
+          \ = re.split(r'[。\\n]+', text)\n    parts = [p.strip() for p in parts if\
+          \ p.strip()]\n    return parts\n\ndef normalize_item(item: str):\n    \"\
+          \"\"\n    去掉行首编号（如 '1. '、'1、'）并做简单规范化（去首尾空白）。\n    \"\"\"\n    item = item.strip()\n\
+          \    # 去掉可能的编号前缀\n    item = re.sub(r'^\\d+[\\.\\、\\)\\s]*', '', item)\n\
+          \    return item.strip()\n\ndef main(arg1: str, arg2: str):\n    \"\"\"\n\
+          \    arg1: 字符串格式的 JSON（直接传入 JSON 文本），例如:\n      \"{\\\"现病史采集\\\": \\\"1.\
+          \ 前天...2. 当晚...\\\", \\\"既往史采集\\\": \\\"\\\", ... }\"\n    arg2: \n    返回:\
+          \ {\"result\": {<key>: percentage, ...}, \"detail\": {<key>: [matched items...]}}\n\
+          \    \"\"\"\n    # 解析 arg1（不做盲目替换引号）\n    json_data = json.loads(arg1)\n\
+          \n    # 解析 arg2 为字典（保留带编号的每行）\n    matching_data = {}\n    current_key =\
+          \ None\n    for line in arg2.split('\\n'):\n        line = line.strip()\n\
+          \        if not line:\n            continue\n        # 支持中文冒号（：）分节\n   \
+          \     if line.endswith('：') or line.endswith(':'):\n            current_key\
+          \ = line[:-1].strip()\n            matching_data[current_key] = []\n   \
+          \     elif current_key:\n            matching_data[current_key].append(line)\n\
+          \    print(\"matching_data\",matching_data)\n\n    matching_progress = {}\n\
+          \    detail = {}\n\n    for key in json_data:\n        # 提取 json_data 中的条目（无论是否换行或连写）\n\
+          \        raw_text = json_data.get(key, '') or ''\n        json_items = extract_items_from_text(raw_text)\n\
+          \        json_items_norm = [normalize_item(it) for it in json_items]\n\n\
+          \        if key in matching_data:\n            # matching_items 来自 arg2（每行为编号项），也规范化\n\
+          \            matching_items = matching_data[key]\n            matching_items_norm\
+          \ = [normalize_item(it) for it in matching_items]\n\n            total =\
+          \ len(json_items_norm)\n            T_total = len(matching_items_norm)\n\
+          \            matched_items = []\n            if total == 0:\n          \
+          \      # 如果原始 JSON 中没有定义条目（比如既往史为空），但 arg2 有 \"1. 无。\" 这种，\n           \
+          \     # 我们把匹配逻辑反向：若 matching_items 中有“无”类且 user 对话/arg1 空，则认为completed？\n\
+          \                # 这里保持：total==0 -> progress=0（除非你想在此处特殊处理）\n          \
+          \      progress = 0.0\n            else:\n                # 逐条判断 json_items\
+          \ 是否被 matching_items 覆盖（部分包含）\n                for jidx, jitem in enumerate(json_items_norm):\n\
+          \                    for mitem in matching_items_norm:\n               \
+          \         if not jitem:\n                            continue\n        \
+          \                # 若 jitem 在 mitem 中或 mitem 在 jitem 中，则视为匹配\n          \
+          \              if (jitem in mitem) or (mitem in jitem):\n              \
+          \              matched_items.append(json_items[jidx])  # 用原始显示条目加入 detail\n\
+          \                            break\n                matched = len(matched_items)\n\
+          \                progress = (matched / T_total) * 100\n\n            matching_progress[key]\
+          \ = round(progress, 2)\n            detail[key] = matched_items\n      \
+          \  else:\n            # arg2 中没有该 key\n            matching_progress[key]\
+          \ = 0.0\n            detail[key] = []\n\n    return {\"result\": matching_progress,\
+          \ \"detail\": detail}"
+        code_language: python3
+        outputs:
+          detail:
+            children: null
+            type: object
+          result:
+            children: null
+            type: object
+        selected: false
+        title: 问诊进度
+        type: code
+        variables:
+        - value_selector:
+          - '1762137478471'
+          - text
+          value_type: string
+          variable: arg1
+        - value_selector:
+          - conversation
+          - Schedule
+          value_type: string
+          variable: arg2
+      height: 51
+      id: '1762138910855'
+      position:
+        x: 5615
+        y: 374.5
+      positionAbsolute:
+        x: 5615
+        y: 374.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: '='
+            id: c8e7bcaa-bd42-4a8c-8981-393da7c97748
+            value: '1'
+            varType: number
+            variable_selector:
+            - sys
+            - dialogue_count
+          id: 'true'
+          logical_operator: and
+        selected: false
+        title: 条件分支
+        type: if-else
+      height: 123
+      id: '1762140992494'
+      position:
+        x: 2415.689987215433
+        y: 842.667159732833
+      positionAbsolute:
+        x: 2415.689987215433
+        y: 842.667159732833
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        items:
+        - input_type: variable
+          operation: over-write
+          value:
+          - '1762137802571'
+          - text
+          variable_selector:
+          - conversation
+          - Schedule
+          write_mode: over-write
+        selected: false
+        title: 变量赋值 3
+        type: assigner
+        version: '2'
+      height: 83
+      id: '1762141036905'
+      position:
+        x: 4619
+        y: 666
+      positionAbsolute:
+        x: 4619
+        y: 666
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        desc: ''
+        items:
+        - input_type: variable
+          operation: clear
+          value: ''
+          variable_selector:
+          - conversation
+          - Conversation
+          write_mode: over-write
+        selected: false
+        title: 变量赋值 4
+        type: assigner
+        version: '2'
+      height: 83
+      id: '1762141313568'
+      position:
+        x: 1117
+        y: 293
+      positionAbsolute:
+        x: 1117
+        y: 293
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        items:
+        - input_type: variable
+          operation: over-write
+          value:
+          - '1762137478471'
+          - text
+          variable_selector:
+          - conversation
+          - Progress
+          write_mode: over-write
+        selected: false
+        title: 变量赋值 5
+        type: assigner
+        version: '2'
+      height: 83
+      id: '1762155585258'
+      position:
+        x: 5290.559526512579
+        y: 374.5
+      positionAbsolute:
+        x: 5290.559526512579
+        y: 374.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        answer: '{{#llm.text#}}'
+        selected: false
+        title: 情景对话
+        type: answer
+        variables:
+        - value_selector:
+          - '1762505728969'
+          - raw_img_list
+          value_type: string
+          variable: files
+      height: 102
+      id: '1762158696174'
+      position:
+        x: 4619
+        y: 523.7578582832552
+      positionAbsolute:
+        x: 4619
+        y: 523.7578582832552
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        items:
+        - input_type: variable
+          operation: over-write
+          value:
+          - '1762505728969'
+          - raw_img_list
+          variable_selector:
+          - conversation
+          - figure
+          write_mode: over-write
+        selected: false
+        title: 变量赋值 6
+        type: assigner
+        version: '2'
+      height: 83
+      id: '1762417328014'
+      position:
+        x: 4619
+        y: 800
+      positionAbsolute:
+        x: 4619
+        y: 800
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        classes:
+        - id: '1'
+          name: 用户扮演的医生提到需要看看面相/舌头/喉咙等视图请求
+        - id: '2'
+          name: 正常问诊，没有视图需求
+        instructions: ''
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        query_variable_selector:
+        - '1761892400942'
+        - sys.query
+        selected: false
+        title: 问题分类器
+        type: question-classifier
+        vision:
+          enabled: false
+      height: 185
+      id: '1762417602639'
+      position:
+        x: 1765.8809463352081
+        y: 293
+      positionAbsolute:
+        x: 1765.8809463352081
+        y: 293
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        code: "\ndef main(arg1: str):\n    data = json.loads(arg1)\n    url = data.get(\"\
+          image_url\",\"\")\n    return {\n        \"result\": url,\n    }\n"
+        code_language: python3
+        outputs:
+          result:
+            children: null
+            type: string
+        selected: false
+        title: 展示图片
+        type: code
+        variables:
+        - value_selector:
+          - '1762418876960'
+          - text
+          value_type: string
+          variable: arg1
+      height: 51
+      id: '1762418041663'
+      position:
+        x: 2868
+        y: 496
+      positionAbsolute:
+        x: 2868
+        y: 496
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        answer: '{{#llm.text#}}'
+        selected: false
+        title: 直接回复 2
+        type: answer
+        variables:
+        - value_selector:
+          - '1762916691034'
+          - output
+          value_type: string
+          variable: files
+      height: 102
+      id: '1762418261687'
+      position:
+        x: 3906.0949326211394
+        y: -67.03541103633374
+      positionAbsolute:
+        x: 3906.0949326211394
+        y: -67.03541103633374
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            max_tokens: 601
+            temperature: 0
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: 880f0d26-7fa7-4e0f-a795-4775db6778f2
+          role: system
+          text: "你是中医虚拟病人，具备舌象、咽喉等图片资料。\n现有图片资料为：{{#conversation.figure#}}\n当医生要求“伸出舌头”“让我看看你的舌头”“张开嘴看看喉咙”等时，\n\
+            请从标准图库中找到最匹配的图像描述和URL并输出如下格式：\n\n{\n  \"type\": \"舌象\",\n  \"description\"\
+            : \"舌淡红，苔薄白\",\n  \"image_url\": \"https://yourcdn.com/tongue_red_thin_white.jpg\"\
+            \n}\n\n若医生未提出此类要求，请输出：\n{\"type\": null, \"description\": null, \"image_url\"\
+            : null}\n\n禁止输出额外文字。\n\n医生指令为：{{#sys.query#}}\n"
+        selected: false
+        title: 匹配图片
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1762418876960'
+      position:
+        x: 2480.891002448197
+        y: 464.48536194626615
+      positionAbsolute:
+        x: 2480.891002448197
+        y: 464.48536194626615
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: empty
+            id: b2a34acb-d405-41ba-858b-9f58849c5bb0
+            value: ''
+            varType: string
+            variable_selector:
+            - '1761892400942'
+            - record
+          id: 'true'
+          logical_operator: and
+        selected: false
+        title: 条件分支 2
+        type: if-else
+      height: 123
+      id: '1762419163501'
+      position:
+        x: 724.1606216887099
+        y: 1088.5244068490663
+      positionAbsolute:
+        x: 724.1606216887099
+        y: 1088.5244068490663
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 病机辨证的准确性与深度
+        model:
+          completion_params:
+            max_tokens: 2801
+            temperature: 0.7
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: a8a562fa-df64-456f-b741-dac47df73dbe
+          role: system
+          text: "你是一名严谨的中医临床教学评测助手，具备扎实的中医基础理论与辨证论治能力。\n你的任务是对学生提交的中医辨证结果进行客观评分，而非教学或引导。\n\
+            \n【评分规则】（严格执行）\n\n一、病名判断（10分）\n- 学生病名与标准答案一致，或为规范等价表述（如教材通用别称、同病异名），得\
+            \ 10 分\n- 判断错误或不一致，得 0 分\n- 不给中间分\n\n二、病机分析（20分）\n根据准确性、完整性与逻辑深度评分：\n\n\
+            - 优秀（18–20分）：\n  病机分析层层深入，逻辑严密，能围绕核心病机展开，\n  明确病位、病性、病势，并体现其内在联系或传变关系。\n\
+            \n- 良好（14–17分）：\n  病机分析基本正确，涵盖主要病机要点（如表里、寒热、虚实等），\n  逻辑通顺，但对病机特殊性或病势变化分析不足。\n\
+            \n- 一般（10–13分）：\n  病机分析较为笼统，多为症状与病机的简单对应，\n  缺乏核心病机的提炼与整体整合。\n\n- 差（0–9分）：\n\
+            \  病机分析存在明显错误，或与标准答案、四诊信息严重不符，\n  或逻辑混乱、自相矛盾。\n\n三、证型判断（15分）\n根据证型概括的准确性及其与病机分析的一致性评分：\n\
+            \n- 优秀（13–15分）：\n  证型高度概括，病位、病性、病势明确，与病机分析完全一致。\n\n- 良好（10–12分）：\n  证型基本正确，但未能突出关键病机或关键信息。\n\
+            \n- 一般（7–9分）：\n  证型表述模糊或不完整，对病位或病势界定不清。\n\n- 差（0–6分）：\n  证型判断错误，或与病机分析明显矛盾。\n\
+            \n【唯一允许的输出格式】\n{\n  \"disease_name_score\": 0,\n  \"pathogenesis_score\"\
+            : 0,\n  \"syndrome_score\": 0,\n  \"overall_comment\": \"\"\n}\n【评分约束】\n\
+            - 不得因表述冗长或用词华丽而提高分数\n- 若病机分析方向与标准答案不一致，不得评为高分\n- overall_comment 应客观反映辨证准确性与分析深度，不得出现鼓励性套话"
+        - id: e27d97c7-65d0-49e9-a055-0343ed0878fd
+          role: user
+          text: '【学生答案】
+
+            - 病名：{{#1767576815682.bm#}}
+
+            - 病机分析：{{#1767576815682.bjfx#}}
+
+            - 证型：{{#1767576815682.zx#}}
+
+            【标准答案】
+
+            - 病名：{{#1762505728969.bm#}}
+
+            - 病机分析：{{#1762505728969.bjfx#}}
+
+            - 证型：{{#1762505728969.zx#}}
+
+            '
+        selected: false
+        title: 病机辨证的准确性与深度
+        type: llm
+        vision:
+          enabled: false
+      height: 115
+      id: '1762487403971'
+      position:
+        x: 1758.1323866978032
+        y: 1211.4456056222812
+      positionAbsolute:
+        x: 1758.1323866978032
+        y: 1211.4456056222812
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            max_tokens: 16601
+            temperature: 0.1
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: 46b745d5-09a4-4634-9cd0-83ebf0416b45
+          role: system
+          text: '你是一名中医临床教学专家。现在请你根据以下两组 JSON 数据生成一份完整的问诊评估报告，报告要求清晰、条理分明、可用于教学评阅。
+
+            【输入数据】
+
+            得分：{{#1767575643891.total#}}
+
+            病机辨证的准确性与深度的评分和评价：{{#1767575643891.part1#}}
+
+            治则治法的匹配性与精准性的评分评价：{{#1767575643891.part2#}}
+
+            处方用药的合理性与规范性的评分评价：{{#1767575643891.part3#}}
+
+            人文关怀评价的评分评价：{{#1767575643891.part4#}}
+
+            输出要求：
+
+            严格按照以下报告格式输出，不要有大标题，不要输出代码块标记，不要输出 JSON，直接生成可读报告，以markdown格式进行渲染。
+
+            问诊过程评估和病历书写评估部分需渲染成表格形式，显示每个维度、得分和点评。
+
+            报告结构如下：
+
+            一、总体评价   得分：xx/100
+
+            总体描述：根据问诊过程和病历书写情况综合评价学生表现，指出优点和不足。
+
+            二、评价维度和分类
+
+
+            | 评价维度             | 得分 | 点评 |
+
+            |--------------------|-----|-----|
+
+            | 病机辨证的准确性与深度  | X   | xxx |
+
+            | 治则治法的匹配性与精准性     | X   | xxx |
+
+            | 处方用药的合理性与规范性           | X   | xxx |
+
+            | 人文关怀评价       | X   | xxx |
+
+            三、混淆提示
+
+            本症易与xxx病混淆，二者分别表现如下：
+
+            - xx病症-> （具体表现）
+
+            - xx病症 -> （具体表现）
+
+            本次辩证【准确/不准确】（一句话概述辩证情况），但后续仍需注意保持敏感辨别。
+
+
+            四、进修建议
+
+            建议在后续学习中进一步深化XXX能力/探索xx方法/关注xx细节，遵循小标题+具体建议的输出格式'
+        selected: false
+        title: LLM 7
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1762494946084'
+      position:
+        x: 2577.126258270676
+        y: 1400.6311172673718
+      positionAbsolute:
+        x: 2577.126258270676
+        y: 1400.6311172673718
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        answer: '{{#1762494946084.text#}}'
+        selected: false
+        title: 直接回复 4
+        type: answer
+        variables: []
+      height: 102
+      id: '1762497340969'
+      position:
+        x: 3206.2128422823507
+        y: 1400.6311172673718
+      positionAbsolute:
+        x: 3206.2128422823507
+        y: 1400.6311172673718
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        code: "\nimport json\n\ndef main(arg1: str):\n    \"\"\"\n    1. 取出 qjmnzntImageList\
+          \ 字段原样保留（不修改其数据类型）\n    2. 将指定字段的键替换为中文、值做对应转换后，拼成一段多行字符串\n    3. 返回 (qjmnzntImageList,\
+          \ 拼接好的文本) 二元组\n    \"\"\"\n    data = json.loads(arg1)\n\n    # 1. 取出 qjmnzntImageList\n\
+          \    raw_img_list = data.get(\"qjmnzntImageList\") or []\n    img_lines\
+          \ = []\n    for item in raw_img_list:\n        img_lines.append(\n     \
+          \       \"type：{type}\\n\"\n            \"description：{description}\\n\"\
+          \n            \"image_url：{filePath}\".format(\n                type=item.get(\"\
+          type\", \"\"),\n                description=item.get(\"description\", \"\
+          \"),\n                filePath=item.get(\"filePath\", \"\")\n          \
+          \  )\n        )\n    img_str = \"\\n\\n\".join(img_lines)\n\n    # 2. 字段映射：英文键\
+          \ -> 中文键\n    key_map = {\n        \"name\": \"姓名\",\n        \"age\": \"\
+          年龄\",\n        \"sex\": \"性别\",\n        \"fzjc\": \"辅助检查\",\n        \"\
+          zs\": \"自述\",\n        \"xbs\": \"现病史\",\n        \"jws\": \"既往史\",\n  \
+          \      \"gms\": \"过敏史\",\n        \"szxx\": \"四诊信息\"\n    }\n\n    # 3.\
+          \ 值转换函数\n    def convert_value(k, v):\n        if k == \"sex\":\n      \
+          \      return \"女生\" if str(v) == \"1\" else \"男生\"\n        if k == \"\
+          age\":\n            return f\"{v}岁\"\n        return v or \"无\"  # 空值默认给“无”\n\
+          \n    # 4. 按顺序拼接文本\n    lines = []\n    for eng_key in [\"name\", \"sex\"\
+          , \"age\", \"fzjc\", \"zs\", \"xbs\", \"jws\", \"gms\", \"szxx\"]:\n   \
+          \     ch_key = key_map[eng_key]\n        val = convert_value(eng_key, data.get(eng_key))\n\
+          \        lines.append(f\"{ch_key}：{val}\")\n\n    text_output = \"\\n\"\
+          .join(lines)\n\n\n    return {\"raw_img_list\":img_str, \"text_output\"\
+          :text_output,\n    \"bm\":data.get(\"bm\"),\n    \"bjfx\":data.get(\"bjfx\"\
+          ),\n    \"zx\":data.get(\"zx\"),\n    \"zezf\":data.get(\"zezf\"),\n   \
+          \ \"cfyy\":data.get(\"cfyy\"),\n    \"ywzc\":data.get(\"ywzc\"),\n    \"\
+          jl\":data.get(\"jl\"),\n    \"jfff\":data.get(\"jfff\"),\n    \"yz\":data.get(\"\
+          yz\")}\n\n\n"
+        code_language: python3
+        outputs:
+          bjfx:
+            children: null
+            type: string
+          bm:
+            children: null
+            type: string
+          cfyy:
+            children: null
+            type: string
+          jfff:
+            children: null
+            type: string
+          jl:
+            children: null
+            type: string
+          raw_img_list:
+            children: null
+            type: string
+          text_output:
+            children: null
+            type: string
+          ywzc:
+            children: null
+            type: string
+          yz:
+            children: null
+            type: string
+          zezf:
+            children: null
+            type: string
+          zx:
+            children: null
+            type: string
+        selected: false
+        title: 拆分数据
+        type: code
+        variables:
+        - value_selector:
+          - '1761892400942'
+          - data
+          value_type: string
+          variable: arg1
+      height: 51
+      id: '1762505728969'
+      position:
+        x: 103.99998908496241
+        y: 1070.524406087552
+      positionAbsolute:
+        x: 103.99998908496241
+        y: 1070.524406087552
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        selected: false
+        template: "\r\n<img src=\"{{ arg1 }}\" style=\"width: 200px;height: 200px;\"\
+          \ alt=\"\">"
+        title: 模板转换 4
+        type: template-transform
+        variables:
+        - value_selector:
+          - '1762418041663'
+          - result
+          value_type: string
+          variable: arg1
+      height: 51
+      id: '1762916691034'
+      position:
+        x: 3470.9999884080603
+        y: -67.03541103633374
+      positionAbsolute:
+        x: 3470.9999884080603
+        y: -67.03541103633374
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: not empty
+            id: a0a2a740-a6d4-4920-89b4-15f76c4cbafd
+            value: ''
+            varType: string
+            variable_selector:
+            - '1762418041663'
+            - result
+          id: 'true'
+          logical_operator: and
+        selected: false
+        title: 条件分支 3
+        type: if-else
+      height: 123
+      id: '1762916804795'
+      position:
+        x: 3268.7592102990557
+        y: 464.48536194626615
+      positionAbsolute:
+        x: 3268.7592102990557
+        y: 464.48536194626615
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        code: "\ndef main(arg1):\n    return {\n        \"result\": arg1,\n    }\n"
+        code_language: python3
+        outputs:
+          result:
+            children: null
+            type: object
+        selected: false
+        title: 问诊进度
+        type: code
+        variables:
+        - value_selector:
+          - conversation
+          - cur_porgressdata
+          value_type: object
+          variable: arg1
+      height: 51
+      id: '1762935918266'
+      position:
+        x: 2874.2128422823507
+        y: 1400.6311172673718
+      positionAbsolute:
+        x: 2874.2128422823507
+        y: 1400.6311172673718
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: not empty
+            id: 6c8b5900-fa35-4353-b4f5-5427d555792a
+            value: ''
+            varType: string
+            variable_selector:
+            - '1762505728969'
+            - raw_img_list
+          id: 'true'
+          logical_operator: and
+        selected: false
+        title: 条件分支 4
+        type: if-else
+      height: 123
+      id: '1763085024546'
+      position:
+        x: 2113
+        y: 628
+      positionAbsolute:
+        x: 2113
+        y: 628
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 治则治法的匹配性与精准性
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: 2a511715-9662-42c2-9cca-f0c2c242749e
+          role: system
+          text: "你是一名严谨的中医临床教学评测助手，熟悉中医治则治法与辨证论治原则。\n你的任务是对学生提交的“治则治法方案”进行匹配性与精准性的评分，而非教学或纠错。\n\
+            【评分规则：治则治法匹配性与精准性（总分 15 分）】\n\n- 优秀（13–15 分）：\n  治则精准对证，治法与证型、病机高度匹配；\n\
+            \  具体治法明确，能够清晰指出治疗的主要方向或手段，\n  与病机分析、证型判断环环相扣。\n\n- 良好（10–12 分）：\n  治则治法基本正确，整体方向无明显错误，\n\
+            \  但表述不够精炼，或个别治法存在轻微偏差，\n  对关键治疗要点的突出不足。\n\n- 一般（7–9 分）：\n  治则治法表述较为笼统，多为原则性描述，\n\
+            \  未能明确体现具体治法或治疗路径，\n  与证型的对应关系不够清晰。\n\n- 差（0–6 分）：\n  治则治法与证型或病机明显不符，\n\
+            \  或治疗方向错误，缺乏中医辨证论治的基本一致性。\n【输出要求】\n\n- 仅输出一个 JSON 对象\n- 不得输出任何解释性文字\n\
+            - 不得使用中文引号\n- 不得输出 Markdown\n- 评分必须为整数\n- overall_comment 使用一句话总结学生治则治法与证型、病机的匹配程度与精准性\n\
+            【唯一允许的输出格式】\n{\n  \"treatment_score\": 0,\n  \"overall_comment\": \"\"\
+            \n}\n【评分约束】\n- 不得因用词完整或表述冗长而提高分数\n- 若治则方向与标准答案不一致，不得评为高分\n- overall_comment\
+            \ 应客观反映治则治法的针对性与精确度，不得使用鼓励性套话\n"
+        - id: ac8ffcbe-9d27-4296-8e3c-ba97b7d10073
+          role: user
+          text: '【学生答案】
+
+            - 治则治法：{{#1767576815682.zezf#}}
+
+
+            【标准答案】
+
+            - 治则治法：{{#1762505728969.zezf#}}'
+        selected: false
+        title: 治则治法的匹配性与精准性
+        type: llm
+        vision:
+          enabled: false
+      height: 115
+      id: '1767575592150'
+      position:
+        x: 1758.1323866978032
+        y: 1381.3288954700868
+      positionAbsolute:
+        x: 1758.1323866978032
+        y: 1381.3288954700868
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 处方用药的合理性与规范性
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: bc83892c-a66d-46f0-9a3f-ad701299a2eb
+          role: system
+          text: "你是一名严谨的中医临床教学评测助手，熟悉方剂学、中医处方规范及临床用药原则。\n你的任务是对学生提交的处方用药方案进行合理性与规范性评分，而非教学或纠错。\n\
+            【评分规则：处方用药合理性与规范性】\n\n一、处方用药（方剂选择）（总分 10 分）\n\n- 优秀（9–10 分）：\n  方剂选择经典、恰当，与治则治法及证型高度匹配，针对核心病机，体现规范临床思路。\n\
+            \n- 良好（7–8 分）：\n  方剂选择基本正确，但并非最优选，或应注明“加减”而未注明。\n\n- 一般（5–6 分）：\n  方剂选择存在偏差，不能全面照顾病机特点（如表里同病、寒热错杂等）。\n\
+            \n- 差（0–4 分）：\n  方剂选择错误，与证型或治则明显不符。\n\n二、药物组成（总分 15 分）\n\n- 优秀（13–15 分）：\n\
+            \  组方结构严谨，君臣佐使清晰，解表、清泄气分、通腑泻热、调和气血等层次分明，\n  药物配置紧扣病机，主次明确。\n\n- 良好（10–12\
+            \ 分）：\n  药物组成基本合理，能够覆盖主要病机，\n  但个别药物配伍或剂量略显冗余或不足。\n\n- 一般（7–9 分）：\n  药物堆砌，君臣佐使不清，或关键药物缺失，整体针对性不足。\n\
+            \n- 差（0–6 分）：\n  药物组成与治则、病机严重不符。\n\n三、剂量（总分 5 分）\n\n- 正确（5 分）：\n  剂量与标准答案一致或在合理临床范围内。\n\
+            \n- 错误（0 分）：\n  剂量明显错误，或与标准答案严重不符。\n\n四、煎服方法（总分 5 分）\n\n- 优秀（5 分）：\n \
+            \ 煎服方法描述详尽、专业，包含关键步骤（如先煎、后下、煎煮次数、服用时间等），\n  体现临床可操作性。\n\n- 良好（4 分）：\n\
+            \  有基本煎服说明，但缺失 1–2 项重要细节。\n\n- 一般（3 分）：\n  描述过于简略，仅写“水煎服”等，无法有效指导实际操作。\n\
+            \n- 差（0–2 分）：\n  煎服方法错误或明显不规范。\n\n【输出要求】\n\n- 仅输出一个 JSON 对象\n- 不输出任何解释性文字\n\
+            - 不使用中文引号\n- 不输出 Markdown\n- 所有分数必须为整数\n【唯一允许的输出格式】\n- overall_comment\
+            \ 用一句话总结学生处方用药的合理性、规范性及临床针对性\n{  \"formula_score\": 0,\n  \"herb_composition_score\"\
+            : 0,\n  \"dosage_score\": 0,\n  \"decoction_score\": 0,\n  \"overall_comment\"\
+            : \"\"}\n【评分约束】\n- 不得因药味多或表述复杂而提高分数\n- 若处方整体方向与标准答案不一致，不得评为高分\n- 药物组成评分应重点考察结构与病机匹配，而非简单数量\n\
+            - overall_comment 应体现处方的临床合理性与规范性，不得使用鼓励性套话"
+        - id: 9517a9c3-f8df-47fd-a45a-5f36243fd189
+          role: user
+          text: '【学生答案】
+
+            - 处方名称：{{#1767576815682.cfyy#}}
+
+            - 药物组成：{{#1767576815682.ywzc#}}
+
+            - 剂量：{{#1767576815682.jl#}}
+
+            - 煎服方法：{{#1767576815682.jfff#}}
+
+
+            【标准答案】
+
+            - 处方名称：{{#1762505728969.cfyy#}}
+
+            - 药物组成：{{#1762505728969.ywzc#}}
+
+            - 剂量：{{#1762505728969.jl#}}
+
+            - 煎服方法：{{#1762505728969.jfff#}}'
+        selected: false
+        structured_output_enabled: false
+        title: 处方用药的合理性与规范性
+        type: llm
+        vision:
+          enabled: false
+      height: 115
+      id: '1767575606152'
+      position:
+        x: 1765.8809463352081
+        y: 1545.6180269928036
+      positionAbsolute:
+        x: 1765.8809463352081
+        y: 1545.6180269928036
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        code: "import json\nimport re\n\ndef _clean(s):\n        return re.sub(r'^```json\\\
+          s*|\\s*```$', '', s.strip(), flags=re.I)\n\ndef summarize_score(data: dict)\
+          \ -> dict:\n    \"\"\"\n    将各 score 字段求和，并保留 overall_comment 内容。\n    \n\
+          \    参数\n    ----\n    data : dict\n        原始评分字典，必须包含以 \"_score\" 结尾的键以及\
+          \ \"overall_comment\" 键。\n    \n    返回\n    ----\n    dict\n        形如 {\"\
+          score\": \"<总分>\", \"comments\": \"<保持不变>\"}\n    \"\"\"\n    # 计算所有 *_score\
+          \ 字段的总和\n    total = sum(v for k, v in data.items() if k.endswith(\"_score\"\
+          ))\n    \n    # 保留原来的 overall_comment\n    comments = data.get(\"overall_comment\"\
+          , \"\")\n    \n    return {\"score\": str(total), \"comments\": comments}\n\
+          \ndef main(arg1: str, arg2: str, text: str, text_1: str):\n    arg1 = _clean(arg1)\n\
+          \    arg2 = _clean(arg2)\n    text = _clean(text)\n    text_1 = _clean(text_1)\n\
+          \    data1 = json.loads(arg1)\n    data2 = json.loads(arg2)\n    data3 =\
+          \ json.loads(text)\n    data4 = json.loads(text_1)\n    part1= summarize_score(data1)\n\
+          \    part2= summarize_score(data2)\n    part3=summarize_score(data3)\n \
+          \   part4=summarize_score(data4)\n    return {\n        \"part1\": json.dumps(part1,\
+          \ ensure_ascii=False),\n        \"part2\": json.dumps(part2, ensure_ascii=False),\n\
+          \        \"part3\": json.dumps(part3, ensure_ascii=False),\n        \"part4\"\
+          : json.dumps(part4, ensure_ascii=False),\n        \"total\": sum(int(item[\"\
+          score\"]) for item in (part1, part2, part3, part4))\n    }\n"
+        code_language: python3
+        outputs:
+          part1:
+            children: null
+            type: string
+          part2:
+            children: null
+            type: string
+          part3:
+            children: null
+            type: string
+          part4:
+            children: null
+            type: string
+          total:
+            children: null
+            type: number
+        selected: false
+        title: 代码执行 8
+        type: code
+        variables:
+        - value_selector:
+          - '1762487403971'
+          - text
+          value_type: string
+          variable: arg1
+        - value_selector:
+          - '1767575592150'
+          - text
+          value_type: string
+          variable: arg2
+        - value_selector:
+          - '1767575606152'
+          - text
+          value_type: string
+          variable: text
+        - value_selector:
+          - '1767575646749'
+          - text
+          value_type: string
+          variable: text_1
+      height: 51
+      id: '1767575643891'
+      position:
+        x: 2243.5481060680413
+        y: 1420.3811516555918
+      positionAbsolute:
+        x: 2243.5481060680413
+        y: 1420.3811516555918
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: f4fcc83c-7539-466d-844c-7bfd2831d5d5
+          role: system
+          text: "你是一名严谨的中医临床教学评测助手，熟悉中医临床医嘱规范，\n并理解温疫类疾病在公共卫生、防护与人文关怀层面的特殊要求。\n你的任务是对学生提交的医嘱内容进行专业性与完整性的评分，而非教学或补充医嘱。\n\
+            【评分规则：医嘱（总分 5 分）】\n\n- 优秀（5 分）：\n  医嘱内容全面、专业、具体，\n  能涵盖病情观察、隔离或防护要点、饮食起居、用药配合、复诊或警示信号，\n\
+            \  并体现温疫诊治的公共卫生属性与现代医学人文关怀。\n\n- 良好（4 分）：\n  医嘱较为完整，涵盖病情观察、饮食、休息等常规内容，\n\
+            \  但对防护、警示或人文关怀的体现不够充分。\n\n- 一般（3 分）：\n  医嘱内容简单、笼统，缺乏针对性，\n  多为泛化表述（如“多喝水，注意休息”），指导意义有限。\n\
+            \n- 差（0–2 分）：\n  医嘱明显缺失，或存在错误、误导性内容，\n  可能影响患者安全或疾病管理。\n【输出要求】\n\n- 仅输出一个\
+            \ JSON 对象\n- 不得输出任何解释性文字\n- 不得使用中文引号\n- 不得输出 Markdown\n- 分数必须为整数\n- overall_comment\
+            \ 用一句话总结医嘱的专业性、完整性与人文关怀体现程度\n【唯一允许的输出格式】\n{\"advice_score\": 0,  \"overall_comment\"\
+            : \"\"}\n【评分约束】\n- 不得因文字冗长而提高分数\n- 若医嘱缺乏基本安全性或存在误导，不得评为高分\n- overall_comment\
+            \ 应客观评价医嘱质量，不得使用鼓励性或安慰性套话"
+        - id: 699436e1-85d3-4295-99f8-eb16ff46940c
+          role: user
+          text: '【学生答案】
+
+            - 医嘱：{{#1767576815682.yz#}}
+
+
+            【标准答案】
+
+            - 医嘱：{{#1762505728969.yz#}}'
+        selected: false
+        title: 医嘱评价
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1767575646749'
+      position:
+        x: 1765.8809463352081
+        y: 1699.6180269928036
+      positionAbsolute:
+        x: 1765.8809463352081
+        y: 1699.6180269928036
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        code: "\ndef main(arg1: str):\n    data = json.loads(arg1)\n    return {\n\
+          \    \"bm\":data.get(\"bm\"),\n    \"bjfx\":data.get(\"bjfx\"),\n    \"\
+          zx\":data.get(\"zx\"),\n    \"zezf\":data.get(\"zezf\"),\n    \"cfyy\":data.get(\"\
+          cfyy\"),\n    \"ywzc\":data.get(\"ywzc\"),\n    \"jl\":data.get(\"jl\"),\n\
+          \    \"jfff\":data.get(\"jfff\"),\n    \"yz\":data.get(\"yz\"),\n\n\n  \
+          \  }"
+        code_language: python3
+        desc: 拆分记录数据
+        outputs:
+          bjfx:
+            children: null
+            type: string
+          bm:
+            children: null
+            type: string
+          cfyy:
+            children: null
+            type: string
+          jfff:
+            children: null
+            type: string
+          jl:
+            children: null
+            type: string
+          ywzc:
+            children: null
+            type: string
+          yz:
+            children: null
+            type: string
+          zezf:
+            children: null
+            type: string
+          zx:
+            children: null
+            type: string
+        selected: false
+        title: 拆分病历填写数据
+        type: code
+        variables:
+        - value_selector:
+          - '1761892400942'
+          - record
+          value_type: string
+          variable: arg1
+      height: 79
+      id: '1767576815682'
+      position:
+        x: 1158.53625544543
+        y: 1248.322150224221
+      positionAbsolute:
+        x: 1158.53625544543
+        y: 1248.322150224221
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        items:
+        - input_type: variable
+          operation: over-write
+          value:
+          - '1762138910855'
+          - result
+          variable_selector:
+          - conversation
+          - cur_porgressdata
+          write_mode: over-write
+        selected: false
+        title: 变量赋值 7
+        type: assigner
+        version: '2'
+      height: 83
+      id: '1767586746328'
+      position:
+        x: 5916
+        y: 374.5
+      positionAbsolute:
+        x: 5916
+        y: 374.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    viewport:
+      x: -1382.6398700861323
+      y: 195.76476477391645
+      zoom: 0.5000000000000008
+  rag_pipeline_variables: []

@@ -7,13 +7,16 @@ const state = {
   panelOpen: false, replying: false, chatRecords: [],
   hasCamera: false, hasMic: false, typingRowId: null,
   lastAvatarMsgId: null, lastAvatarMsg: '',
+  broadcastHistory: [],
 };
 
 let remoteVideo, localVideo, localPip, placeholder,
     statusDot, statusText, callBtn, micBtn, volBtn, chatPanelBtn,
     textInput, sendBtn, interruptBtn, chatMessages, chatEmpty,
     subtitleHumanRow, subtitleHumanText, subtitleAvatarRow, subtitleAvatarText,
-    hintBadge, hintText, permOverlay, toast, rightPanel, appEl;
+    hintBadge, hintText, permOverlay, toast, rightPanel, appEl,
+    broadcastBtn, broadcastModal, broadcastInput, broadcastSendBtn, broadcastCloseBtn, broadcastCancelBtn,
+    broadcastHistoryList, clearBroadcastHistoryBtn;
 
 function initDOMRefs() {
   remoteVideo   = document.getElementById('remote-video');
@@ -41,6 +44,14 @@ function initDOMRefs() {
   toast         = document.getElementById('toast');
   rightPanel    = document.getElementById('right-panel');
   appEl         = document.getElementById('app');
+  broadcastBtn  = document.getElementById('broadcast-btn');
+  broadcastModal = document.getElementById('broadcast-modal');
+  broadcastInput = document.getElementById('broadcast-input');
+  broadcastSendBtn = document.getElementById('broadcast-send-btn');
+  broadcastCloseBtn = document.getElementById('broadcast-close-btn');
+  broadcastCancelBtn = document.getElementById('broadcast-cancel-btn');
+  broadcastHistoryList = document.getElementById('broadcast-history-list');
+  clearBroadcastHistoryBtn = document.getElementById('clear-broadcast-history');
 }
 
 let _tt = null;
@@ -130,6 +141,7 @@ function iconHangup() { return '<svg class="icon" viewBox="0 0 2896 1024" versio
 function iconSend()   { return _svg('<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>'); }
 function iconPause()  { return _svg('<rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/>'); }
 function iconChat()   { return _svg('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'); }
+function iconBroadcast() { return '<svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M879.468648 1024H399.033637a124.467068 124.467068 0 0 1-124.481645-124.481644V711.003004a26.135315 26.135315 0 0 1 51.235712 0v188.515352a72.735762 72.735762 0 0 0 72.211015 73.260508H880.0517a72.735762 72.735762 0 0 0 72.750338-72.721185V418.500292a72.750338 72.750338 0 0 0-72.240167-72.225591h-138.372863a26.120738 26.120738 0 0 1 0-51.221136h137.27964a124.481644 124.481644 0 0 1 124.481645 123.446727v481.018064a124.467068 124.467068 0 0 1-124.452492 124.481644z" fill="currentColor"/><path d="M649.979303 846.766708a19.473943 19.473943 0 0 1-18.949197-18.949197V604.464791a19.473943 19.473943 0 0 1 38.42314 0v223.338144a19.473943 19.473943 0 0 1-19.473943 18.949197z m223.862891-55.841824a19.459367 19.459367 0 0 1-18.949196-18.949197V660.306615a19.459367 19.459367 0 0 1 38.408564 0v111.654496a19.459367 19.459367 0 0 1-19.459368 18.963773z m-336.042134 0a19.459367 19.459367 0 0 1-18.949197-18.949197V660.306615a19.459367 19.459367 0 0 1 38.408564-6.282388 19.750893 19.750893 0 0 1 0 6.282388v111.654496a19.459367 19.459367 0 0 1-19.459367 18.963773z m227.944257 130.632845a19.473943 19.473943 0 0 1-18.949197-18.949197v-374.465274a19.473943 19.473943 0 0 1 38.42314 0v376.068668a19.473943 19.473943 0 0 1-19.473943 17.491566z" fill="currentColor"/><path d="M264.392308 318.62345h101.42193l-50.710965-100.387012z" fill="currentColor"/><path d="M471.346685 461.03395a28.744473 28.744473 0 0 1-13.322742 3.0756 29.15261 29.15261 0 0 1-28.175998-14.343084l-34.837369-73.245932H235.195969l-36.878052 73.245932a29.15261 29.15261 0 0 1-55.594027-17.564448 29.473289 29.473289 0 0 1 4.372892-8.556291l141.900328-282.780316a30.21668 30.21668 0 0 1 51.221136 0l143.941012 282.255569a29.15261 29.15261 0 0 1-12.797996 37.898393M522.567821 0H105.598041A85.548334 85.548334 0 0 0 20.049707 85.56291v419.010463a85.548334 85.548334 0 0 0 85.548334 85.548333h419.025039a85.56291 85.56291 0 0 0 86.000199-85.096468V85.548334A85.577486 85.577486 0 0 0 525.01664 0h-0.39356" fill="currentColor"/></svg>'; }
 
 function showSubtitle(role, text) {
   if (role === 'human') {
@@ -286,6 +298,21 @@ function handleDataChannelMessage(event) {
   var data;
   try { data = JSON.parse(event.data); } catch(e) { return; }
   if (!data || !data.type) return;
+
+  // 处理文字播报字幕同步 - 同一轮累加显示，新一轮清空
+  if (data.type === 'broadcast_subtitle') {
+    if (data.is_new_broadcast) {
+      // 新一轮播报，清空之前的内容
+      subtitleAvatarText.textContent = data.message;
+    } else {
+      // 同一轮播报，累加显示
+      var currentText = subtitleAvatarText.textContent || '';
+      subtitleAvatarText.textContent = currentText + data.message;
+    }
+    subtitleAvatarRow.classList.add('visible');
+    return;
+  }
+
   if (data.type === 'chat') {
     var existing = null;
     for (var i = 0; i < state.chatRecords.length; i++) {
@@ -293,6 +320,7 @@ function handleDataChannelMessage(event) {
     }
     var role = data.role || 'avatar';
     if (existing) {
+      // 同一轮对话，累加显示
       existing.message += data.message;
       updateMsgBubble(data.id, existing.message);
       updateSubtitle(role, existing.message);
@@ -312,6 +340,7 @@ function handleDataChannelMessage(event) {
         clearTypingIndicator();
         appendMsgRow(data.id, role, data.message);
       }
+      // 新一轮对话，清空之前的字幕
       showSubtitle(role, data.message);
     }
     return;
@@ -401,6 +430,88 @@ function sendInterrupt() {
   interruptBtn.classList.remove('active');
   clearTypingIndicator();
 }
+
+function openBroadcastModal() {
+  if (state.streamState !== 'open') {
+    showToast('请先连接后再使用文字播报', 'error');
+    return;
+  }
+  // 自动静音麦克风
+  if (!state.micMuted) {
+    state.micMuted = true;
+    if (state.localStream) {
+      state.localStream.getAudioTracks().forEach(function(t) { t.enabled = false; });
+    }
+    syncCtrlBtns();
+    showToast('已自动静音麦克风', 'success', 2000);
+  }
+  renderBroadcastHistory();
+  broadcastModal.classList.remove('hidden');
+  broadcastInput.value = '';
+  broadcastInput.focus();
+}
+
+function renderBroadcastHistory() {
+  broadcastHistoryList.innerHTML = '';
+  if (state.broadcastHistory.length === 0) {
+    broadcastHistoryList.innerHTML = '<div class="broadcast-history-empty">暂无播报记录</div>';
+    return;
+  }
+  state.broadcastHistory.forEach(function(item) {
+    var div = document.createElement('div');
+    div.className = 'broadcast-history-item';
+    div.innerHTML = '<div class="history-time">' + item.time + '</div>' + item.text;
+    div.addEventListener('click', function() {
+      broadcastInput.value = item.text;
+      broadcastInput.focus();
+    });
+    broadcastHistoryList.appendChild(div);
+  });
+}
+
+function addBroadcastHistory(text) {
+  var now = new Date();
+  var timeStr = now.getHours().toString().padStart(2, '0') + ':' +
+                now.getMinutes().toString().padStart(2, '0') + ':' +
+                now.getSeconds().toString().padStart(2, '0');
+  state.broadcastHistory.unshift({ text: text, time: timeStr });
+  if (state.broadcastHistory.length > 20) {
+    state.broadcastHistory.pop();
+  }
+}
+
+function clearBroadcastHistory() {
+  state.broadcastHistory = [];
+  renderBroadcastHistory();
+  showToast('已清空播报历史', 'success', 2000);
+}
+
+function closeBroadcastModal() {
+  broadcastModal.classList.add('hidden');
+  broadcastInput.value = '';
+}
+
+function sendBroadcastText() {
+  var text = broadcastInput.value.trim();
+  if (!text) {
+    showToast('请输入播报内容', 'error');
+    return;
+  }
+  if (state.dataChannel && state.dataChannel.readyState === 'open') {
+    // 清空之前的字幕内容，准备显示新的播报
+    subtitleAvatarText.textContent = '';
+    subtitleAvatarRow.classList.remove('visible');
+
+    state.dataChannel.send(JSON.stringify({ type: 'broadcast_text', data: text }));
+    addBroadcastHistory(text);
+    showToast('播报已发送', 'success');
+    closeBroadcastModal();
+    // 不在这里显示字幕，等待后端逐句发送
+  } else {
+    showToast('连接已断开', 'error');
+  }
+}
+
 async function loadConfig() {
   try {
     var resp = await fetch('/openavatarchat/initconfig');
@@ -438,6 +549,15 @@ function bindEvents() {
     textInput.style.height = Math.min(textInput.scrollHeight, 80) + 'px';
   });
   interruptBtn.addEventListener('click', function() { sendInterrupt(); });
+  broadcastBtn.addEventListener('click', function() { openBroadcastModal(); });
+  broadcastSendBtn.addEventListener('click', function() { sendBroadcastText(); });
+  broadcastCloseBtn.addEventListener('click', function() { closeBroadcastModal(); });
+  broadcastCancelBtn.addEventListener('click', function() { closeBroadcastModal(); });
+  broadcastInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.ctrlKey) { sendBroadcastText(); }
+    if (e.key === 'Escape') { closeBroadcastModal(); }
+  });
+  clearBroadcastHistoryBtn.addEventListener('click', function() { clearBroadcastHistory(); });
   document.getElementById('perm-grant-btn').addEventListener('click', function() { accessMedia(); });
   document.getElementById('clear-btn').addEventListener('click', function() {
     state.chatRecords = [];
@@ -454,6 +574,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   chatPanelBtn.innerHTML = iconChat();
   sendBtn.innerHTML = iconSend();
   interruptBtn.innerHTML = iconPause();
+  broadcastBtn.innerHTML = iconBroadcast();
   syncCtrlBtns();
   bindEvents();
   await loadConfig();

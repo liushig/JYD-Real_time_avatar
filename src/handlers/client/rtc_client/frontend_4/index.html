@@ -41,6 +41,11 @@
       </div>
     </div>
 
+    <!-- 左侧控制按钮（仅文字播报） -->
+    <div id="left-controls">
+      <button class="ctrl-btn" id="broadcast-btn" title="文字播报"></button>
+    </div>
+
     <div id="remote-video-wrap">
       <video id="remote-video" autoplay playsinline></video>
       <div id="avatar-placeholder">
@@ -110,6 +115,34 @@
 
   </div>
 
+</div>
+
+<!-- 文字播报模态框 -->
+<div id="broadcast-modal" class="modal hidden">
+  <div class="modal-content broadcast-modal-large">
+    <div class="modal-header">
+      <h3>文字播报</h3>
+      <button class="modal-close" id="broadcast-close-btn">&times;</button>
+    </div>
+    <div class="modal-body broadcast-body">
+      <div class="broadcast-history-section">
+        <div class="broadcast-history-header">
+          <span>播报历史</span>
+          <button class="clear-history-btn" id="clear-broadcast-history">清空</button>
+        </div>
+        <div class="broadcast-history-list" id="broadcast-history-list">
+          <div class="broadcast-history-empty">暂无播报记录</div>
+        </div>
+      </div>
+      <div class="broadcast-input-section">
+        <textarea id="broadcast-input" placeholder="输入要播报的文字内容..." rows="6"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn cancel" id="broadcast-cancel-btn">取消</button>
+      <button class="modal-btn primary" id="broadcast-send-btn">开始播报</button>
+    </div>
+  </div>
 </div>
 
 <script src="./app.js"></script>

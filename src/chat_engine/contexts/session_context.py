@@ -27,6 +27,10 @@ class SharedStates:
     avatar_mode: str = "ending"   # "ending" | "running"
      # === 新增：rtc状态 ===
     rtc_mode: str = "ending"   # "ending" | "running"
+    # === 新增：broadcast字幕映射 ===
+    broadcast_subtitle_map: Dict[str, str] = None  # sentence_id -> text 映射
+    broadcast_rtc_channel = None  # RTC DataChannel 引用
+    broadcast_event_loop = None  # 事件循环引用
 
 # 步骤2：在SessionContext中初始化扩展后的SharedStates
 class SessionContext(object):
@@ -36,10 +40,11 @@ class SessionContext(object):
         self.session_info = session_info
         self.input_queues = input_queues
         self.output_queues = output_queues
-        
+
         # 初始化扩展后的SharedStates（替换原有简单dataclass版本）
-        self.shared_states = SharedStates()  
-        
+        self.shared_states = SharedStates()
+        self.shared_states.broadcast_subtitle_map = {}  # 初始化字典
+
         self.input_definitions: Dict[EngineChannelType, DataBundleDefinition] = {}
         self.input_start_time: float = -1.0
 
