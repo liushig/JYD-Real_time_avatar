@@ -1,0 +1,658 @@
+app:
+  description: 北交大建艺学院实时互动数字人智能体 - 支持文本、表格、媒体多模态输出
+  icon: face_with_monocle
+  icon_background: '#FFE4E8'
+  mode: advanced-chat
+  name: 建艺学院实时互动数字人
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: langgenius/xinference:0.0.3@2f59f67f45ca4f626aaeef0d9c656cc0e38ab9fbf2c9b4673e3e20162eed9e4f
+    version: null
+kind: app
+version: 0.4.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 10
+        file_size_limit: 500
+        image_file_size_limit: 15
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: '你好！我是建艺学院智能助手，可以为你提供文字说明、数据表格或图片展示。请问有什么可以帮助你的？'
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    # 开始 -> 语义分析节点
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: start-semantic-analysis
+      source: start_node
+      sourceHandle: source
+      target: semantic_analysis
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    # 语义分析 -> 问题分类器
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: question-classifier
+      id: semantic-classifier
+      source: semantic_analysis
+      sourceHandle: source
+      target: intent_classifier
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    # 问题分类器 -> 文本分支（知识检索）
+    - data:
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: knowledge-retrieval
+      id: classifier-text-branch
+      source: intent_classifier
+      sourceHandle: text_branch
+      target: text_knowledge_retrieval
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    # 问题分类器 -> 表格分支（知识检索）
+    - data:
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: knowledge-retrieval
+      id: classifier-table-branch
+      source: intent_classifier
+      sourceHandle: table_branch
+      target: table_knowledge_retrieval
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    # 问题分类器 -> 媒体分支（知识检索）
+    - data:
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: knowledge-retrieval
+      id: classifier-media-branch
+      source: intent_classifier
+      sourceHandle: media_branch
+      target: media_knowledge_retrieval
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    # 文本知识检索 -> 文本生成LLM
+    - data:
+        isInLoop: false
+        sourceType: knowledge-retrieval
+        targetType: llm
+      id: text-retrieval-llm
+      source: text_knowledge_retrieval
+      sourceHandle: source
+      target: text_generation_llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    # 表格知识检索 -> 表格生成LLM
+    - data:
+        isInLoop: false
+        sourceType: knowledge-retrieval
+        targetType: llm
+      id: table-retrieval-llm
+      source: table_knowledge_retrieval
+      sourceHandle: source
+      target: table_generation_llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    # 媒体知识检索 -> 媒体选择LLM
+    - data:
+        isInLoop: false
+        sourceType: knowledge-retrieval
+        targetType: llm
+      id: media-retrieval-llm
+      source: media_knowledge_retrieval
+      sourceHandle: source
+      target: media_selection_llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    # 文本生成LLM -> 文本输出
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: text-llm-answer
+      source: text_generation_llm
+      sourceHandle: source
+      target: text_answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    # 表格生成LLM -> 表格输出
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: table-llm-answer
+      source: table_generation_llm
+      sourceHandle: source
+      target: table_answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    # 媒体选择LLM -> 媒体输出
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: media-llm-answer
+      source: media_selection_llm
+      sourceHandle: source
+      target: media_answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+
+    nodes:
+    # 1. 开始节点
+    - data:
+        desc: '接收用户输入的任意文本'
+        selected: false
+        title: 开始
+        type: start
+        variables: []
+      height: 52
+      id: start_node
+      position:
+        x: 50
+        y: 400
+      positionAbsolute:
+        x: 50
+        y: 400
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 2. 语义分析节点（预处理）
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            temperature: 0.3
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: semantic_system_prompt
+          role: system
+          text: |
+            你是一个语义分析助手，负责理解用户的查询意图。
+            请分析用户的问题，判断用户需要什么类型的回复。
+
+            直接输出用户的原始问题，不要做任何修改。
+        - id: semantic_user_prompt
+          role: user
+          text: '{{#1711528708197.sys.query#}}'
+        selected: false
+        title: 语义分析
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: semantic_analysis
+      position:
+        x: 350
+        y: 400
+      positionAbsolute:
+        x: 350
+        y: 400
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 3. 意图分类器
+    - data:
+        classes:
+        - id: text_branch
+          name: 文本回复
+        - id: table_branch
+          name: 表格数据
+        - id: media_branch
+          name: 图片媒体
+        instructions: |
+          你是建艺学院的智能助手，需要根据用户问题判断最合适的回复类型。
+
+          分类规则：
+          1. **文本回复（text）**：用户询问概念解释、理论知识、定义说明、历史背景、设计原理等需要自然语言描述的问题
+             - 例如："什么是包豪斯设计风格？"、"请解释色彩理论"、"设计美学的核心是什么？"
+
+          2. **表格数据（table）**：用户需要对比数据、统计信息、结构化列表、分类汇总等
+             - 例如："比较现代主义和后现代主义的特点"、"列出课程安排"、"各个设计流派的代表人物"
+
+          3. **图片媒体（media）**：用户想看具体案例、作品展示、视觉参考、实物图片等
+             - 例如："给我看看包豪斯的代表作品"、"展示一些优秀的海报设计"、"有没有相关的图片参考？"
+
+          请根据用户问题的核心需求进行分类，选择最能满足用户需求的回复类型。
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        query_variable_selector:
+        - start_node
+        - sys.query
+        selected: false
+        title: 意图分类器
+        type: question-classifier
+        vision:
+          enabled: false
+      height: 208
+      id: intent_classifier
+      position:
+        x: 650
+        y: 350
+      positionAbsolute:
+        x: 650
+        y: 350
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 4. 文本分支 - 知识检索
+    - data:
+        dataset_ids: []
+        multiple_retrieval_config:
+          reranking_enable: true
+          top_k: 3
+        query_variable_selector:
+        - start_node
+        - sys.query
+        retrieval_mode: multiple
+        selected: false
+        title: 文本知识检索
+        type: knowledge-retrieval
+      height: 52
+      id: text_knowledge_retrieval
+      position:
+        x: 950
+        y: 150
+      positionAbsolute:
+        x: 950
+        y: 150
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 5. 表格分支 - 知识检索
+    - data:
+        dataset_ids: []
+        multiple_retrieval_config:
+          reranking_enable: true
+          top_k: 3
+        query_variable_selector:
+        - start_node
+        - sys.query
+        retrieval_mode: multiple
+        selected: false
+        title: 表格知识检索
+        type: knowledge-retrieval
+      height: 52
+      id: table_knowledge_retrieval
+      position:
+        x: 950
+        y: 400
+      positionAbsolute:
+        x: 950
+        y: 400
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 6. 媒体分支 - 知识检索
+    - data:
+        dataset_ids: []  # 在这里填入你的媒体知识库ID，例如：['kb-media-xxxxx']
+        multiple_retrieval_config:
+          reranking_enable: true
+          top_k: 5
+        query_variable_selector:
+        - start_node
+        - sys.query
+        retrieval_mode: multiple
+        selected: false
+        title: 媒体知识检索
+        type: knowledge-retrieval
+      height: 52
+      id: media_knowledge_retrieval
+      position:
+        x: 950
+        y: 650
+      positionAbsolute:
+        x: 950
+        y: 650
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 7. 文本生成LLM
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - text_knowledge_retrieval
+          - result
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: text_system_prompt
+          role: system
+          text: |
+            你是建艺学院的专业助教，擅长用清晰、准确的自然语言解释设计与美学相关的概念和知识。
+
+            任务：根据检索到的知识库内容，为用户提供详细、专业的文字回复。
+
+            要求：
+            1. 回复要准确、专业，符合学术规范
+            2. 语言要清晰易懂，适合学生理解
+            3. 如果知识库中没有相关信息，请诚实告知并给出合理建议
+            4. 回复要有条理，可以使用分点说明
+            5. 纯文本输出，不要使用表格或特殊格式
+
+            知识库内容：
+            {{#context#}}
+        - id: text_user_prompt
+          role: user
+          text: '{{#start_node.sys.query#}}'
+        selected: false
+        title: 文本生成
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: text_generation_llm
+      position:
+        x: 1250
+        y: 150
+      positionAbsolute:
+        x: 1250
+        y: 150
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 8. 表格生成LLM
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - table_knowledge_retrieval
+          - result
+        model:
+          completion_params:
+            temperature: 0.5
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: table_system_prompt
+          role: system
+          text: |
+            你是建艺学院的数据整理助手，擅长将信息整理成清晰的表格形式。
+
+            任务：根据检索到的知识库内容，生成Markdown格式的表格来回答用户问题。
+
+            要求：
+            1. 使用标准Markdown表格语法
+            2. 表格要有清晰的表头
+            3. 内容要对齐、整洁
+            4. 如果数据不足，可以在表格后补充说明
+            5. 表格列数建议2-5列，行数根据实际需要
+            6. 必须输出Markdown表格格式
+
+            示例格式：
+            | 设计流派 | 时间 | 特点 |
+            |---------|------|------|
+            | 包豪斯 | 1919-1933 | 功能主义、简约 |
+            | 装饰艺术 | 1920s-1930s | 几何图案、奢华 |
+
+            知识库内容：
+            {{#context#}}
+        - id: table_user_prompt
+          role: user
+          text: '{{#start_node.sys.query#}}'
+        selected: false
+        title: 表格生成
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: table_generation_llm
+      position:
+        x: 1250
+        y: 400
+      positionAbsolute:
+        x: 1250
+        y: 400
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 9. 媒体选择LLM
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - media_knowledge_retrieval
+          - result
+        model:
+          completion_params:
+            temperature: 0.3
+          mode: chat
+          name: xingkong3
+          provider: langgenius/xinference/xinference
+        prompt_template:
+        - id: media_system_prompt
+          role: system
+          text: |
+            你是建艺学院的媒体资源管理助手，负责从知识库中选择最匹配用户需求的图片或媒体资源。
+
+            任务：根据检索到的图文对知识库（包含文本描述、文件路径、文件类型），选择最匹配用户问题的媒体资源。
+
+            知识库格式示例：
+            - 描述：包豪斯风格建筑外观
+              路径：/images/bauhaus_building.jpg
+              类型：image/jpeg
+
+            输出要求：
+            必须严格按照以下JSON格式输出，不要添加任何其他文字：
+            {
+              "description": "资源的详细描述",
+              "file_path": "文件的完整路径",
+              "file_type": "文件类型（如image/jpeg, image/png等）"
+            }
+
+            如果找到多个相关资源，选择最相关的一个。
+            如果没有找到合适的资源，输出：
+            {
+              "description": "抱歉，暂时没有找到相关的图片资源",
+              "file_path": "",
+              "file_type": ""
+            }
+
+            知识库内容：
+            {{#context#}}
+        - id: media_user_prompt
+          role: user
+          text: '{{#start_node.sys.query#}}'
+        selected: false
+        title: 媒体选择
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: media_selection_llm
+      position:
+        x: 1250
+        y: 650
+      positionAbsolute:
+        x: 1250
+        y: 650
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 10. 文本输出节点
+    - data:
+        answer: ''
+        selected: false
+        title: 文本输出
+        type: answer
+        variables:
+        - value_selector:
+          - text_generation_llm
+          - text
+          variable: text
+      height: 84
+      id: text_answer
+      position:
+        x: 1550
+        y: 150
+      positionAbsolute:
+        x: 1550
+        y: 150
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 11. 表格输出节点
+    - data:
+        answer: ''
+        selected: false
+        title: 表格输出
+        type: answer
+        variables:
+        - value_selector:
+          - table_generation_llm
+          - text
+          variable: text
+      height: 84
+      id: table_answer
+      position:
+        x: 1550
+        y: 400
+      positionAbsolute:
+        x: 1550
+        y: 400
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    # 12. 媒体输出节点
+    - data:
+        answer: ''
+        selected: false
+        title: 媒体输出
+        type: answer
+        variables:
+        - value_selector:
+          - media_selection_llm
+          - text
+          variable: text
+      height: 84
+      id: media_answer
+      position:
+        x: 1550
+        y: 650
+      positionAbsolute:
+        x: 1550
+        y: 650
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.8
+  rag_pipeline_variables: []

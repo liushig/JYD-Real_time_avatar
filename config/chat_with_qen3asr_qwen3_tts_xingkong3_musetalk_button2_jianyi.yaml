@@ -1,8 +1,8 @@
 # qwen3ttsfaster 配置文件
 # qwen3asr阻塞式
 # 仅按钮打断对话2 ,前端界面自启
-# cd /opt/jyd01/liushiguo/OpenAvatarChat_test
-# CUDA_VISIBLE_DEVICES=2 uv run src/demo.py --config config/chat_with_qen3asr_qwen3_tts_xingkong3_musetalk_button2_jianyi.yaml
+# cd /opt/jyd01/liushiguo/OpenAvatarChat_testCUDA_VISIBLE_DEVICES=2 uv run src/demo.py --config config/chat_with_qen3asr_qwen3_tts_xingkong3_musetalk_button2_jianyi.yaml
+# 
 # CUDA_VISIBLE_DEVICES=2 nohup uv run src/demo.py --config config/chat_with_qen3asr_qwen3_tts_xingkong3_musetalk_button2_jianyi.yaml > ./logs/8028.log 2>&1 &
 
 default:

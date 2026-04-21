@@ -15,6 +15,10 @@ let remoteVideo, localVideo, localPip, placeholder,
     subtitleHumanRow, subtitleHumanText, subtitleAvatarRow, subtitleAvatarText,
     hintBadge, hintText, permOverlay, toast, rightPanel, appEl;
 
+// --- 新增：浮动输入框相关变量 ---
+let chatInputArea = null;          // 输入区域容器
+let inputFloated = false;          // 是否处于浮动（顶部）状态
+
 function initDOMRefs() {
   remoteVideo   = document.getElementById('remote-video');
   localVideo    = document.getElementById('local-video');
@@ -41,6 +45,8 @@ function initDOMRefs() {
   toast         = document.getElementById('toast');
   rightPanel    = document.getElementById('right-panel');
   appEl         = document.getElementById('app');
+  // 新增：获取输入区域容器
+  chatInputArea = document.getElementById('chat-input-area');
 }
 
 let _tt = null;
@@ -104,6 +110,43 @@ function syncCtrlBtns() {
   updateInputHint();
 }
 
+// ========== 新增：输入框浮动控制 ==========
+// 将输入框移动到顶部（chat-messages 之前）
+function elevateInputToTop() {
+  // 仅当面板打开、未浮动、且必要元素存在时执行
+  if (!state.panelOpen || inputFloated || !rightPanel || !chatInputArea || !chatMessages) return;
+  // 将输入区域移动到聊天消息区域之前（即 panel-header 之后）
+  rightPanel.insertBefore(chatInputArea, chatMessages);
+  inputFloated = true;
+  // 移动后保持输入框焦点（如果原本有焦点）
+  if (document.activeElement === textInput) {
+    textInput.focus();
+  }
+}
+
+// 恢复输入框到底部（原样式）
+function restoreInputToBottom() {
+  if (!inputFloated || !rightPanel || !chatInputArea) return;
+  // 将输入区域移回末尾（chat-messages 之后）
+  rightPanel.appendChild(chatInputArea);
+  inputFloated = false;
+  // 滚动聊天区域到底部，让最新消息可见
+  scrollToBottom();
+  // 主动让输入框失去焦点，避免立即再次触发浮动（用户若需重新输入需再次点击）
+  if (document.activeElement === textInput) {
+    textInput.blur();
+  }
+}
+
+// 强制重置浮动状态（例如关闭面板时使用）
+function resetInputFloat() {
+  if (inputFloated) {
+    restoreInputToBottom();
+  }
+  inputFloated = false;
+}
+// ====================================
+
 function toggleChatPanel() {
   state.panelOpen = !state.panelOpen;
   if (state.panelOpen) {
@@ -111,11 +154,15 @@ function toggleChatPanel() {
     appEl.classList.add('panel-open');
     // 隐藏字幕，避免与对话记录冲突
     document.getElementById('subtitle-bar').style.visibility = 'hidden';
+    // 面板打开时，确保输入框处于底部原始位置（消除任何残留浮动状态）
+    resetInputFloat();
   } else {
     rightPanel.classList.remove('open');
     appEl.classList.remove('panel-open');
     // 恢复字幕显示
     document.getElementById('subtitle-bar').style.visibility = 'visible';
+    // 面板关闭时，也重置浮动状态
+    resetInputFloat();
   }
   syncCtrlBtns();
 }
@@ -205,6 +252,17 @@ async function startWebRTC() {
     if (!state.localStream) await accessMedia();
     var pc = new RTCPeerConnection(state.rtcConfig);
     state.peerConnection = pc;
+        // ICE 状态监听
+    pc.addEventListener('iceconnectionstatechange', function() {
+        console.log('🧊 ICE 连接状态:', pc.iceConnectionState);
+        if (pc.iceConnectionState === 'connected') {
+            console.log('✅ ICE 已连通，媒体流可正常传输');
+        } else if (pc.iceConnectionState === 'failed') {
+            console.error('❌ ICE 连接失败，请检查 TURN 服务器配置');
+        } else if (pc.iceConnectionState === 'disconnected') {
+            console.warn('⚠️ ICE 连接断开，尝试重连中...');
+        }
+    });
     pc.addEventListener('track', function(evt) {
       if (evt.streams && evt.streams[0]) {
         remoteVideo.srcObject = evt.streams[0];
@@ -392,6 +450,9 @@ function sendTextMessage() {
   showTypingIndicator();
   textInput.value = '';
   textInput.style.height = 'auto';
+  
+  // 发送消息后，恢复输入框到底部（原样式）
+  restoreInputToBottom();
 }
 function sendInterrupt() {
   if (state.dataChannel && state.dataChannel.readyState === 'open') {
@@ -437,6 +498,12 @@ function bindEvents() {
     textInput.style.height = 'auto';
     textInput.style.height = Math.min(textInput.scrollHeight, 80) + 'px';
   });
+  // 新增：聚焦输入框时，将其移动到面板顶部（如果面板打开且未浮动）
+  textInput.addEventListener('focus', function() {
+    if (state.panelOpen && !inputFloated) {
+      elevateInputToTop();
+    }
+  });
   interruptBtn.addEventListener('click', function() { sendInterrupt(); });
   document.getElementById('perm-grant-btn').addEventListener('click', function() { accessMedia(); });
   document.getElementById('clear-btn').addEventListener('click', function() {
@@ -444,6 +511,10 @@ function bindEvents() {
     while (chatMessages.firstChild) chatMessages.removeChild(chatMessages.firstChild);
     chatMessages.appendChild(chatEmpty);
     chatEmpty.style.display = '';
+    // 清空对话时，如果输入框处于浮动状态，也恢复到底部（保持界面整洁）
+    if (inputFloated) {
+      restoreInputToBottom();
+    }
   });
 }
 document.addEventListener('DOMContentLoaded', async function() {

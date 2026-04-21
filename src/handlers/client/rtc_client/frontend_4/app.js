@@ -120,13 +120,10 @@ function toggleChatPanel() {
   if (state.panelOpen) {
     rightPanel.classList.add('open');
     appEl.classList.add('panel-open');
-    // 隐藏字幕，避免与对话记录冲突
-    document.getElementById('subtitle-bar').style.visibility = 'hidden';
+    // 对话记录展开时，数字人缩小，字幕和对话记录显示在下方
   } else {
     rightPanel.classList.remove('open');
     appEl.classList.remove('panel-open');
-    // 恢复字幕显示
-    document.getElementById('subtitle-bar').style.visibility = 'visible';
   }
   syncCtrlBtns();
 }

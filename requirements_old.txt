@@ -144,7 +144,7 @@ multidict==6.7.0
 multiprocess==0.70.18
 munkres==1.1.4
 namex==0.1.0
-networkx==3.4.2
+networkx==3.5
 ninja==1.13.0
 numba==0.62.1
 numpy==1.23.5
