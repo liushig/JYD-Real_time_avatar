@@ -89,7 +89,7 @@ default:
     
       AvatarMusetalk:
         module: avatar/musetalk/avatar_handler_musetalk42_xiaoyu_processor
-        fps: 16 # Video frame rate (output_audio_sample_rate 24000;Video frame rate:15、16、20、24、25)
+        fps: 15 # Video frame rate (output_audio_sample_rate 24000;Video frame rate:15、16、20、24、25)
         batch_size: 8 # Batch processing frame count, must be greater than 2
         avatar_video_path: "src/handlers/avatar/musetalk/MuseTalk/data/video/women2.mp4"
         # avatar_video_path: "src/handlers/avatar/musetalk/MuseTalk/data/video/kid.mp4"

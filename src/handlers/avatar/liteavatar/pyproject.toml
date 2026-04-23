@@ -6,6 +6,7 @@ dependencies = [
     "funasr~=1.2.3",
     "h5py~=3.12.1",
     "jieba~=0.42.1",
+    "opencv-python-headless~=4.11.0",
     "pillow~=11.1.0",
     "pydub~=0.25.1",
     "pypinyin~=0.53.0",

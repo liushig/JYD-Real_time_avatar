@@ -82,6 +82,7 @@ default:
         server_url: "http://localhost:9006"
         # speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_wangxu_06b.pt"
         speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_wangxu_pro.pt"
+        # speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_Qwen3内置1.pt"
         timeout: 60
 
 
@@ -111,7 +112,7 @@ default:
         fps: 16 # Video frame rate (output_audio_sample_rate 24000;Video frame rate:15、16、20、24、25)
         batch_size: 4 # Batch processing frame count, must be greater than 2
         # avatar_video_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/avatar/musetalk/MuseTalk/data/video/121380.mp4"  # 12139女性形象
-        avatar_video_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/avatar/musetalk/MuseTalk/data/video/fi.mp4"  # 12139女性形象
+        avatar_video_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/avatar/musetalk/MuseTalk/data/video/fi.mp4"  # 1080p + LANCZOS4
 
         # avatar_video_path: "src/handlers/avatar/musetalk/MuseTalk/data/video/kling_20260327_作品_固定场景_镜头固定__4198_0.mp4"
 

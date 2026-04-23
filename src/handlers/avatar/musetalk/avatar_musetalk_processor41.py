@@ -1085,14 +1085,26 @@ class AvatarMuseTalkProcessor:
                 frame_id = local_frame_id
             
             try:
-                # 尝试从输出队列获取帧（现在应该是空闲帧）
+                # 尝试从输出队列获取帧
                 output_item = self._output_queue.get_nowait()
-                
-                # 检查是否为空闲帧
-                if output_item.get('speech_id') is not None and self._current_speech_id is not None:
-                    # 如果不是空闲帧，且当前有活跃的语音ID，检查是否匹配
-                    if output_item['speech_id'] != self._current_speech_id:
-                        logger.warning(f"[INTERRUPT] Got frame from old speech_id after interrupt, dropping: {output_item['speech_id']}")
+
+                # 检查帧的speech_id是否有效
+                frame_speech_id = output_item.get('speech_id')
+
+                # 如果当前没有活跃任务，但帧有speech_id，说明是旧的残留帧，应该丢弃
+                if self._current_speech_id is None and frame_speech_id is not None:
+                    logger.warning(f"[STALE_FRAME] No active task but got frame with speech_id={frame_speech_id}, dropping and generating idle frame")
+                    # 生成空闲帧替代
+                    frame = self._avatar.generate_idle_frame(frame_id)
+                    speech_id = None
+                    avatar_status = AvatarStatus.LISTENING
+                    end_of_speech = False
+                    frame_timestamp = time.time()
+                    audio_segment = None
+                # 如果当前有活跃任务，检查speech_id是否匹配
+                elif self._current_speech_id is not None and frame_speech_id is not None:
+                    if frame_speech_id != self._current_speech_id:
+                        logger.warning(f"[INTERRUPT] Got frame from old speech_id after interrupt, dropping: {frame_speech_id}")
                         # 生成空闲帧替代
                         frame = self._avatar.generate_idle_frame(frame_id)
                         speech_id = None
@@ -1101,7 +1113,7 @@ class AvatarMuseTalkProcessor:
                         frame_timestamp = time.time()
                         audio_segment = None
                     else:
-                        # 正常帧
+                        # 正常的speaking帧
                         frame = output_item['frame']
                         speech_id = output_item['speech_id']
                         avatar_status = output_item['avatar_status']
@@ -1109,7 +1121,7 @@ class AvatarMuseTalkProcessor:
                         frame_timestamp = output_item.get('timestamp', time.time())
                         audio_segment = output_item.get('audio_segment')
                 else:
-                    # 空闲帧
+                    # 空闲帧（frame_speech_id is None）
                     frame = output_item['frame']
                     speech_id = output_item['speech_id']
                     avatar_status = output_item['avatar_status']
