@@ -1,10 +1,10 @@
 # qwen3ttsfaster 配置文件
 # qwen3asr阻塞式
 # 仅按钮打断对话2 ,前端界面自启
-# CUDA_VISIBLE_DEVICES=2 python src/demo.py --config config/chat_with_qen3asr_qwen3_tts_xingkong3_musetalk_button2_jyd_auto2.yaml
+# CUDA_VISIBLE_DEVICES=2 python src/demo.py --config config/chat_with_qen3asr_qwen3_tts_xingkong3_musetalk_button2_jyd_auto2-test_time.yaml
 # cd /opt/jyd01/liushiguo/OpenAvatarChat_test
-# CUDA_VISIBLE_DEVICES=2 uv run src/demo.py --config config/chat_with_qen3asr_qwen3_tts_xingkong3_musetalk_button2_jyd_auto2.yaml
-# CUDA_VISIBLE_DEVICES=2 nohup uv run src/demo.py --config config/chat_with_qen3asr_qwen3_tts_xingkong3_musetalk_button2_jyd_auto2.yaml > ./logs/8020.log 2>&1 &
+
+# CUDA_VISIBLE_DEVICES=2 nohup uv run src/demo.py --config config/chat_with_qen3asr_qwen3_tts_xingkong3_musetalk_button2_jyd_auto2-test_time.yaml > ./logs/8028.log 2>&1 &
 
 default:
   logger:
@@ -21,11 +21,11 @@ default:
       - "src/handlers"
     handler_configs:
       RtcClient:
-        module: client/rtc_client/client_handler_rtc51_newfront3_auto
+        module: client/rtc_client/client_handler_rtc51_newfront3_test_time
         # max time a session will last for
         connection_ttl: 3600
       SileroVad:
-        module: vad/silerovad/vad_handler_silero_button
+        module: vad/silerovad/vad_handler_silero_button_test_time
         speaking_threshold: 0.4    # 降低阈值提升灵敏度
         start_delay: 1024          # 减小起始延迟，更快识别语音开头
         end_delay: 10000            # 适度减小结束延迟，减少无语音误判
@@ -41,7 +41,7 @@ default:
       #   model_name: "iic/SenseVoiceSmall"
       Qwen3ASRBlocking:
         enabled: True
-        module: asr/qwen3asr/qwen3_asr_handler_blocking
+        module: asr/qwen3asr/qwen3_asr_handler_blocking_test_time
         server_url: "http://localhost:9009"
         wakeup_words_pattern: "^((你)?好\\s*[，,]?\\s*(小达|小的|小德|小岛|小当|小唐|小打)|(等一下|停一下|暂停|别说了|打住|一下|等一下|停一下|闭嘴|stop|shut up))"
 
@@ -67,7 +67,7 @@ default:
 
       LLMWorkflowStreaming:
         enabled: True
-        module: llm/xingkong3/llm_handler_xingkong3_streaming4
+        module: llm/xingkong3/llm_handler_xingkong3_streaming4_test_time
         # api_url: "http://188.18.18.106:5001/v1/workflows/run"  # workflows
         api_url: "http://188.18.18.149:5001/v1/workflows/run" 
         # api_url: "http://188.18.18.106:5001/v1/chat-messages"  # chat
@@ -78,10 +78,11 @@ default:
 
       FasterQwen3TTS:
         enabled: True
-        module: tts/faster-qwen3-tts/handler/faster_qwen3_tts_handler2   #handler  没有分局逻辑，比较卡
+        module: tts/faster-qwen3-tts/handler/faster_qwen3_tts_handler2_test_time   #handler  没有分局逻辑，比较卡
         server_url: "http://localhost:9006"
         # speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_wangxu_06b.pt"
-        speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_wangxu_pro.pt"
+        # speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_wangxu_pro.pt"
+        speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_Qwen3内置vividpro.pt"
         # speaker_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/tts/faster-qwen3-tts/speaker_Qwen3内置1.pt"
         timeout: 60
 
@@ -108,7 +109,7 @@ default:
       #   skip_video_frame: 2
 
       AvatarMusetalk:
-        module: avatar/musetalk/avatar_handler_musetalk42
+        module: avatar/musetalk/avatar_handler_musetalk42_test_time
         fps: 16 # Video frame rate (output_audio_sample_rate 24000;Video frame rate:15、16、20、24、25)
         batch_size: 4 # Batch processing frame count, must be greater than 2
         # avatar_video_path: "/opt/jyd01/liushiguo/OpenAvatarChat_test/src/handlers/avatar/musetalk/MuseTalk/data/video/121380.mp4"  # 12139女性形象

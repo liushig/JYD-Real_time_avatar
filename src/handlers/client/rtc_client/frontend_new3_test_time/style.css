@@ -57,13 +57,56 @@ body {
 }
 .topbar-logo { display: flex; align-items: center; gap: 10px; }
 .logo-dot {
-  display: none; 
+  display: none;
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan);
   animation: pulse-dot 2.4s ease-in-out infinite;
 }
 @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.65)} }
 .logo-text { font-size: 13px; font-weight: 500; letter-spacing: 0.12em; color: var(--text-secondary); text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }
+
+.topbar-left {
+  position: absolute;
+  left: 28px;
+  display: flex;
+  gap: 12px;
+}
+
+.topbar-stats-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: 40px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  font-family: 'JetBrains Mono', monospace;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.topbar-stats-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.topbar-stats-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-cyan);
+  color: var(--text-primary);
+}
+
+.topbar-stats-btn svg {
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
 .topbar-status {
   display: flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 40px;
   background: var(--bg-glass); border: 1px solid var(--border-color);
@@ -620,4 +663,129 @@ body {
 }
 #input-mode-hint {
   display: none;
+}
+
+/* ========== 耗时统计面板 ========== */
+#timing-stats-panel {
+  position: absolute;
+  top: 16px;
+  left: 28px;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 16px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  border-radius: 40px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#timing-stats-panel.hidden {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+.timing-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timing-title {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timing-title::before {
+  content: '⏱';
+  font-size: 12px;
+}
+
+.timing-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.timing-close-btn:hover {
+  background: rgba(252, 129, 129, 0.2);
+  color: var(--accent-red);
+}
+
+.timing-items {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.timing-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timing-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.timing-value {
+  font-size: 12px;
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.timing-value.fast {
+  color: var(--accent-green);
+}
+
+.timing-value.slow {
+  color: var(--accent-amber);
+}
+
+.timing-value.very-slow {
+  color: var(--accent-red);
+}
+
+@media (max-width: 720px) {
+  #timing-stats-panel {
+    left: 16px;
+    gap: 12px;
+    padding: 5px 14px;
+  }
+  .timing-items {
+    gap: 12px;
+  }
+  .timing-title {
+    font-size: 11px;
+  }
+  .timing-label {
+    font-size: 11px;
+  }
+  .timing-value {
+    font-size: 11px;
+  }
 }

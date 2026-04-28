@@ -10,12 +10,14 @@ const state = {
   interruptCooldown: false,   // 新增：打断按钮冷却中
   
 };
-let interruptTimer = null;     // 新增：打断复原计时器
+let interruptTimer = null;     // 新增:打断复原计时器
 let remoteVideo, localVideo, localPip, placeholder,
     statusDot, statusText, callBtn, micBtn, volBtn, chatPanelBtn,
     textInput, sendBtn, interruptBtn, chatMessages, chatEmpty,
     subtitleHumanRow, subtitleHumanText, subtitleAvatarRow, subtitleAvatarText,
-    hintBadge, hintText, permOverlay, toast, rightPanel, appEl, waveformCanvas, waveformCtx;
+    hintBadge, hintText, permOverlay, toast, rightPanel, appEl, waveformCanvas, waveformCtx,
+    timingVad, timingAsr, timingLlm, timingTts, timingAvatar,
+    statsToggleBtn, statsCloseBtn, timingStatsPanel;
 
 // --- 新增：浮动输入框相关变量 ---
 let chatInputArea = null;          // 输入区域容器
@@ -57,6 +59,16 @@ function initDOMRefs() {
   waveformCtx   = waveformCanvas ? waveformCanvas.getContext('2d') : null;
   // 新增：获取输入区域容器
   chatInputArea = document.getElementById('chat-input-area');
+  // 新增：获取耗时统计元素
+  timingVad = document.getElementById('timing-vad');
+  timingAsr = document.getElementById('timing-asr');
+  timingLlm = document.getElementById('timing-llm');
+  timingTts = document.getElementById('timing-tts');
+  timingAvatar = document.getElementById('timing-avatar');
+  // 新增：获取性能统计按钮和面板
+  statsToggleBtn = document.getElementById('stats-toggle-btn');
+  statsCloseBtn = document.getElementById('stats-close-btn');
+  timingStatsPanel = document.getElementById('timing-stats-panel');
 }
 
 let _tt = null;
@@ -377,6 +389,13 @@ function handleDataChannelMessage(event) {
   var data;
   try { data = JSON.parse(event.data); } catch(e) { return; }
   if (!data || !data.type) return;
+
+  // 新增：处理耗时统计数据
+  if (data.type === 'timing_stats') {
+    updateTimingStats(data.data);
+    return;
+  }
+
   if (data.type === 'chat') {
     var existing = null;
     for (var i = 0; i < state.chatRecords.length; i++) {
@@ -556,6 +575,26 @@ function bindEvents() {
     chatMessages.appendChild(chatEmpty);
     chatEmpty.style.display = '';
   });
+
+  // 性能统计按钮事件
+  if (statsToggleBtn) {
+    statsToggleBtn.addEventListener('click', function() {
+      if (timingStatsPanel) {
+        timingStatsPanel.classList.remove('hidden');
+        statsToggleBtn.classList.add('hidden');
+      }
+    });
+  }
+
+  // 性能统计关闭按钮事件
+  if (statsCloseBtn) {
+    statsCloseBtn.addEventListener('click', function() {
+      if (timingStatsPanel) {
+        timingStatsPanel.classList.add('hidden');
+        statsToggleBtn.classList.remove('hidden');
+      }
+    });
+  }
 }
 // ========== 音频波形可视化 ==========
 function initAudioAnalyser(stream) {
@@ -622,6 +661,48 @@ function stopWaveformAnimation() {
   }
 }
 
+function updateTimingStats(timingData) {
+  if (!timingData) return;
+
+  function formatTime(ms) {
+    if (ms === undefined || ms === null || ms === 0) return '--';
+    return ms.toFixed(0) + 'ms';
+  }
+
+  function getColorClass(ms, thresholds) {
+    if (ms === undefined || ms === null || ms === 0) return '';
+    if (ms < thresholds.fast) return 'fast';
+    if (ms < thresholds.normal) return '';
+    if (ms < thresholds.slow) return 'slow';
+    return 'very-slow';
+  }
+
+  if (timingVad && timingData.vad_duration_ms !== undefined) {
+    timingVad.textContent = formatTime(timingData.vad_duration_ms);
+    timingVad.className = 'timing-value ' + getColorClass(timingData.vad_duration_ms, {fast: 500, normal: 700, slow: 900});
+  }
+
+  if (timingAsr && timingData.asr_duration_ms !== undefined) {
+    timingAsr.textContent = formatTime(timingData.asr_duration_ms);
+    timingAsr.className = 'timing-value ' + getColorClass(timingData.asr_duration_ms, {fast: 500, normal: 1000, slow: 2000});
+  }
+
+  if (timingLlm && timingData.llm_first_delay_ms !== undefined) {
+    timingLlm.textContent = formatTime(timingData.llm_first_delay_ms);
+    timingLlm.className = 'timing-value ' + getColorClass(timingData.llm_first_delay_ms, {fast: 500, normal: 1000, slow: 2000});
+  }
+
+  if (timingTts && timingData.tts_duration_ms !== undefined) {
+    timingTts.textContent = formatTime(timingData.tts_duration_ms);
+    timingTts.className = 'timing-value ' + getColorClass(timingData.tts_duration_ms, {fast: 500, normal: 1000, slow: 2000});
+  }
+
+  if (timingAvatar && timingData.avatar_first_frame_delay_ms !== undefined) {
+    timingAvatar.textContent = formatTime(timingData.avatar_first_frame_delay_ms);
+    timingAvatar.className = 'timing-value ' + getColorClass(timingData.avatar_first_frame_delay_ms, {fast: 200, normal: 500, slow: 1000});
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
   initDOMRefs();
   setStreamState('closed');
@@ -632,6 +713,12 @@ document.addEventListener('DOMContentLoaded', async function() {
   interruptBtn.innerHTML = iconPause();
   syncCtrlBtns();
   bindEvents();
+
+  // 初始化时隐藏性能统计面板
+  if (timingStatsPanel) {
+    timingStatsPanel.classList.add('hidden');
+  }
+
   await loadConfig();
   await accessMedia();
   setTimeout(function() { startWebRTC(); }, 500);
