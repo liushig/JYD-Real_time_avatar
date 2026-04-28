@@ -7,8 +7,10 @@ const state = {
   panelOpen: false, replying: false, chatRecords: [],
   hasCamera: false, hasMic: false, typingRowId: null,
   lastAvatarMsgId: null, lastAvatarMsg: '',
+  interruptCooldown: false,   // 新增：打断按钮冷却中
+  
 };
-
+let interruptTimer = null;     // 新增：打断复原计时器
 let remoteVideo, localVideo, localPip, placeholder,
     statusDot, statusText, callBtn, micBtn, volBtn, chatPanelBtn,
     textInput, sendBtn, interruptBtn, chatMessages, chatEmpty,
@@ -173,8 +175,8 @@ function toggleChatPanel() {
     appEl.classList.add('panel-open');
     // 隐藏字幕，避免与对话记录冲突
     document.getElementById('subtitle-bar').style.visibility = 'hidden';
-    // 面板打开时，确保输入框处于底部原始位置（消除任何残留浮动状态）
-    resetInputFloat();
+    // 面板打开时，直接将输入框移到顶部
+    elevateInputToTop();
   } else {
     rightPanel.classList.remove('open');
     appEl.classList.remove('panel-open');
@@ -346,6 +348,12 @@ async function stopWebRTC() {
       state.peerConnection.getSenders().forEach(function(s){ if(s.track) s.track.stop(); });
     setTimeout(function(){ if(state.peerConnection) state.peerConnection.close(); }, 400);
     state.peerConnection = null;
+    if (interruptTimer) {
+    clearTimeout(interruptTimer);
+    interruptTimer = null;
+  }
+  interruptBtn.classList.remove('interrupt-cooldown');
+  state.interruptCooldown = false;
   }
   state.dataChannel = null;
   state.replying = false;
@@ -475,17 +483,34 @@ function sendTextMessage() {
   showTypingIndicator();
   textInput.value = '';
   textInput.style.height = 'auto';
-  
-  // 发送消息后，恢复输入框到底部（原样式）
-  restoreInputToBottom();
 }
 function sendInterrupt() {
-  if (state.dataChannel && state.dataChannel.readyState === 'open') {
-    state.dataChannel.send(JSON.stringify({ type: 'stop_chat' }));
+  // 冷却中或未连接则不允许打断
+  if (state.interruptCooldown) return;
+  if (!state.dataChannel || state.dataChannel.readyState !== 'open') {
+    showToast('未连接，无法打断', 'error');
+    return;
   }
+
+  // 进入冷却状态
+  state.interruptCooldown = true;
+  interruptBtn.classList.add('interrupt-cooldown');
+
+  // 发送打断指令
+  state.dataChannel.send(JSON.stringify({ type: 'stop_chat' }));
+
+  // 清除回复状态及UI高亮
   state.replying = false;
   interruptBtn.classList.remove('active');
   clearTypingIndicator();
+
+  // 1秒后自动复原
+  if (interruptTimer) clearTimeout(interruptTimer);
+  interruptTimer = setTimeout(() => {
+    interruptBtn.classList.remove('interrupt-cooldown');
+    state.interruptCooldown = false;
+    interruptTimer = null;
+  }, 1000);
 }
 async function loadConfig() {
   try {
@@ -523,12 +548,6 @@ function bindEvents() {
     textInput.style.height = 'auto';
     textInput.style.height = Math.min(textInput.scrollHeight, 80) + 'px';
   });
-  // 新增：聚焦输入框时，将其移动到面板顶部（如果面板打开且未浮动）
-  textInput.addEventListener('focus', function() {
-    if (state.panelOpen && !inputFloated) {
-      elevateInputToTop();
-    }
-  });
   interruptBtn.addEventListener('click', function() { sendInterrupt(); });
   document.getElementById('perm-grant-btn').addEventListener('click', function() { accessMedia(); });
   document.getElementById('clear-btn').addEventListener('click', function() {
@@ -536,10 +555,6 @@ function bindEvents() {
     while (chatMessages.firstChild) chatMessages.removeChild(chatMessages.firstChild);
     chatMessages.appendChild(chatEmpty);
     chatEmpty.style.display = '';
-    // 清空对话时，如果输入框处于浮动状态，也恢复到底部（保持界面整洁）
-    if (inputFloated) {
-      restoreInputToBottom();
-    }
   });
 }
 // ========== 音频波形可视化 ==========

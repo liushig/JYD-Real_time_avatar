@@ -130,12 +130,19 @@ body {
 }
 .ctrl-btn:hover { border-color: var(--border-active); background: var(--bg-card-hover); transform: scale(1.08); box-shadow: var(--glow-blue); }
 .ctrl-btn:active { transform: scale(0.96); }
-.ctrl-btn.muted { border-color: var(--accent-red); color: var(--accent-red); background: rgba(252,129,129,0.15); }
-.ctrl-btn.vol-muted { border-color: var(--accent-red); color: var(--accent-red); background: rgba(252,129,129,0.15); }
-.ctrl-btn.panel-on { border-color: var(--accent-emerald); color: var(--accent-emerald); background: rgba(18, 231, 106, 0.15); }
-#interrupt-btn { border-color: rgba(252,129,129,0.4); background: rgba(252,129,129,0.1); color: rgba(252,129,129,0.9); }
-#interrupt-btn:hover { border-color: var(--accent-red); background: rgba(252,129,129,0.25); color: var(--accent-red); transform: scale(1.08); box-shadow: 0 0 20px rgba(252,129,129,0.4); }
-#interrupt-btn.active { border-color: var(--accent-red); background: rgba(252,129,129,0.3); color: var(--accent-red); box-shadow: 0 0 18px rgba(252,129,129,0.6); }
+.ctrl-btn.muted { border-color: #1e90ff; color: #1e90ff; background: rgba(30, 144, 255, 0.25); }
+.ctrl-btn.vol-muted { border-color: #1e90ff; color: #1e90ff; background: rgba(30, 144, 255, 0.25); }
+.ctrl-btn.panel-on { border-color: #1e90ff; color: #1e90ff; background: rgba(30, 144, 255, 0.25); }
+#interrupt-btn { border-color: var(--border-color); background: var(--bg-glass); color: var(--text-primary); }
+#interrupt-btn:hover { border-color: var(--border-active); background: var(--bg-card-hover); color: var(--text-primary); transform: scale(1.08); box-shadow: var(--glow-blue); }
+#interrupt-btn.active { border-color: #1e90ff; background: rgba(30, 144, 255, 0.3); color: #1e90ff; box-shadow: 0 0 18px rgba(30, 144, 255, 0.6); }
+#interrupt-btn.interrupt-cooldown {
+  pointer-events: none;
+  border-color: #1e90ff;
+  background: rgba(30, 144, 255, 0.3);
+  color: #1e90ff;
+  box-shadow: 0 0 18px rgba(30, 144, 255, 0.6);
+}
 #call-btn { background: linear-gradient(135deg, #68d391, #38a169); border-color: rgba(104,211,145,0.5); color: #0a0c10; box-shadow: 0 6px 24px rgba(56,161,105,0.4); }
 #call-btn:hover { transform: scale(1.08); box-shadow: 0 8px 32px rgba(56,161,105,0.6); border-color: rgba(104,211,145,0.8); }
 #call-btn.active { background: linear-gradient(135deg, #fc8181, #e53e3e); color: white; border-color: rgba(252,129,129,0.5); box-shadow: 0 6px 24px rgba(252,129,129,0.4); }

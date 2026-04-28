@@ -146,6 +146,7 @@ class HandlerLLMXingkong3Streaming(HandlerBase, ABC):
         # 初始化中断标志（确保默认值为False）
         if not hasattr(context.shared_states, "llm_interrupt_flag"):
             context.shared_states.llm_interrupt_flag = False
+            logger.info(f"[context.shared_states.llm_interrupt_flag] 11置为: {context.shared_states.llm_interrupt_flag}")
         return context
 
     def start_context(self, session_context, handler_context):
@@ -158,9 +159,11 @@ class HandlerLLMXingkong3Streaming(HandlerBase, ABC):
         """中断后重新获取新speech_id并执行新任务"""
         # 重置中断标志（执行新任务前恢复为False）
         context.shared_states.llm_interrupt_flag = False
+
+        logger.info(f"[context.shared_states.llm_interrupt_flag] 222置为: {context.shared_states.llm_interrupt_flag}")
         # 重新获取新的speech_id
         new_speech_id = inputs.data.get_meta("speech_id") or context.session_id
-        logger.info(f"[LLM RESTART] 中断后获取新speech_id: {new_speech_id}")
+        
         
         # 重置上下文状态
         context.first_chunk_sent = False
